@@ -1,0 +1,2416 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>낙상 알리미 (Fall Alert)</title>
+    <meta
+      name="description"
+      content="스마트폰 가속도 센서로 노인 및 환자의 낙상을 실시간 감지하고 보호자에게 빠르게 알리는 의료 안전 웹 앱"
+    />
+    <meta property="og:title" content="낙상 알리미 (Fall Alert)" />
+    <meta
+      property="og:description"
+      content="스마트폰 가속도 센서로 노인 및 환자의 낙상을 실시간 감지하고 보호자에게 빠르게 알리는 의료 안전 웹 앱"
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      :root {
+        --bg-canvas: #f3f6f4;
+        --bg-surface: #ffffff;
+        --bg-subtle: #e9f0ec;
+        --border-hairline: #d6e2dc;
+        --text-primary: #16302b;
+        --text-secondary: #48645e;
+        --text-muted: #657f79;
+
+        --brand-mint: #1d7a5f;
+        --brand-mint-hover: #16624c;
+        --brand-mint-soft: #e6f4ef;
+
+        --state-normal: #1d7a5f;
+        --state-normal-bg: #e6f4ef;
+        --state-normal-border: #b6dfd0;
+
+        --state-caution: #b7791f;
+        --state-caution-bg: #fef6e4;
+        --state-caution-border: #f2d492;
+
+        --state-danger: #c0392b;
+        --state-danger-dark: #96281e;
+        --state-danger-bg: #fdeceb;
+        --state-danger-border: #f3b5af;
+
+        --radius-card: 20px;
+        --radius-control: 14px;
+        --shadow-card: 0 2px 12px rgba(22, 48, 43, 0.05);
+        --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-canvas);
+        color: var(--text-primary);
+        font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 16px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .app-shell {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Top Bar (Clean 3-zone medical header) */
+      .top-bar {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border-hairline);
+      }
+
+      .top-bar-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .brand-lockup {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: var(--text-primary);
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .brand-mark {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background-color: var(--brand-mint);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .brand-name {
+        font-size: 1.125rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+
+      .sensor-meta-text {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      @media (max-width: 540px) {
+        .sensor-meta-text {
+          display: none;
+        }
+      }
+
+      /* Buttons: minimum 48px touch targets */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 48px;
+        padding: 12px 20px;
+        border-radius: var(--radius-control);
+        border: 1px solid transparent;
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1.25;
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background-color 180ms var(--ease-out), border-color 180ms var(--ease-out), color 180ms var(--ease-out), transform 140ms var(--ease-out);
+      }
+
+      .btn:active {
+        transform: scale(0.985);
+      }
+
+      .btn:focus-visible {
+        outline: 3px solid rgba(29, 122, 95, 0.35);
+        outline-offset: 2px;
+      }
+
+      .btn-primary {
+        background-color: var(--brand-mint);
+        color: #ffffff;
+      }
+
+      .btn-primary:hover {
+        background-color: var(--brand-mint-hover);
+      }
+
+      .btn-primary-lg {
+        width: 100%;
+        min-height: 60px;
+        font-size: 1.1875rem;
+        font-weight: 700;
+        border-radius: 16px;
+        box-shadow: 0 6px 18px rgba(29, 122, 95, 0.22);
+      }
+
+      .btn-secondary {
+        background-color: var(--bg-subtle);
+        color: var(--text-primary);
+        border-color: var(--border-hairline);
+      }
+
+      .btn-secondary:hover {
+        background-color: #dde8e2;
+      }
+
+      .btn-outline-danger {
+        background-color: #ffffff;
+        color: var(--state-danger);
+        border-color: var(--state-danger-border);
+        min-height: 48px;
+        padding: 10px 16px;
+        font-size: 0.9375rem;
+      }
+
+      .btn-outline-danger:hover {
+        background-color: var(--state-danger-bg);
+      }
+
+      .btn-caution {
+        background-color: var(--state-caution);
+        color: #ffffff;
+        min-height: 52px;
+        font-size: 1.0625rem;
+      }
+
+      .btn-caution:hover {
+        background-color: #9b6518;
+      }
+
+      .btn-danger-sim {
+        background-color: var(--state-danger-bg);
+        color: var(--state-danger);
+        border-color: var(--state-danger-border);
+        width: 100%;
+        min-height: 54px;
+      }
+
+      .btn-danger-sim:hover {
+        background-color: #fadbd8;
+      }
+
+      .btn-caution-sim {
+        background-color: var(--state-caution-bg);
+        color: #8f5c11;
+        border-color: var(--state-caution-border);
+        width: 100%;
+        min-height: 54px;
+      }
+
+      .btn-caution-sim:hover {
+        background-color: #fcebc8;
+      }
+
+      /* Main Layout Container */
+      .main-container {
+        width: 100%;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 20px 16px 48px;
+        flex: 1;
+      }
+
+      @media (min-width: 768px) {
+        .main-container {
+          padding: 28px 24px 64px;
+        }
+      }
+
+      /* Welcome / Permission Gate Screen */
+      .welcome-wrap {
+        max-width: 680px;
+        margin: 24px auto 0;
+      }
+
+      .card {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-hairline);
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow-card);
+        padding: 24px;
+      }
+
+      @media (max-width: 480px) {
+        .card {
+          padding: 20px 18px;
+          border-radius: 18px;
+        }
+      }
+
+      .welcome-hero-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+        background-color: var(--brand-mint-soft);
+        color: var(--brand-mint);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+
+      .welcome-title {
+        margin: 0 0 12px;
+        font-size: clamp(1.625rem, 3.5vw, 2.125rem);
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        line-height: 1.25;
+        text-wrap: balance;
+      }
+
+      .welcome-desc {
+        margin: 0 0 24px;
+        font-size: 1.0625rem;
+        color: var(--text-secondary);
+        line-height: 1.65;
+      }
+
+      .steps-list {
+        list-style: none;
+        margin: 0 0 28px;
+        padding: 0;
+        border-top: 1px solid var(--border-hairline);
+      }
+
+      .steps-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border-hairline);
+      }
+
+      .step-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background-color: var(--bg-subtle);
+        color: var(--brand-mint);
+        font-weight: 700;
+        font-size: 0.9375rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .step-text-title {
+        display: block;
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text-primary);
+      }
+
+      .step-text-sub {
+        display: block;
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+        margin-top: 2px;
+      }
+
+      /* Guidance / Warning Notice Box */
+      .notice-box {
+        margin-top: 20px;
+        padding: 18px;
+        border-radius: 16px;
+        border: 1px solid var(--state-caution-border);
+        background-color: var(--state-caution-bg);
+        color: var(--text-primary);
+      }
+
+      .notice-box.is-danger {
+        border-color: var(--state-danger-border);
+        background-color: var(--state-danger-bg);
+      }
+
+      .notice-box-title {
+        margin: 0 0 8px;
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: #8f5c11;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .notice-box.is-danger .notice-box-title {
+        color: var(--state-danger);
+      }
+
+      .notice-box p {
+        margin: 0 0 10px;
+        font-size: 0.9375rem;
+        color: var(--text-primary);
+      }
+
+      .notice-list {
+        margin: 0 0 14px;
+        padding-left: 20px;
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+      }
+
+      .notice-list li {
+        margin-bottom: 6px;
+      }
+
+      /* Dashboard Grid */
+      .dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+
+      @media (min-width: 960px) {
+        .dashboard-grid {
+          grid-template-columns: 1.25fr 1fr;
+          gap: 24px;
+        }
+      }
+
+      .col-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      /* Top Status Card */
+      .status-card {
+        border-radius: 22px;
+        padding: 24px;
+        border: 1.5px solid var(--state-normal-border);
+        background-color: var(--state-normal-bg);
+        color: var(--text-primary);
+        transition: background-color 280ms var(--ease-out), border-color 280ms var(--ease-out), color 220ms var(--ease-out);
+      }
+
+      .status-card.state-normal {
+        background-color: var(--state-normal-bg);
+        border-color: var(--state-normal-border);
+      }
+
+      .status-card.state-watching {
+        background-color: var(--state-caution-bg);
+        border-color: var(--state-caution-border);
+      }
+
+      .status-card.state-caution {
+        background-color: var(--state-caution-bg);
+        border-color: var(--state-caution);
+      }
+
+      .status-card.state-danger {
+        background-color: var(--state-danger-bg);
+        border-color: var(--state-danger);
+      }
+
+      .status-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .status-main {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .status-icon-wrap {
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        background-color: var(--state-normal);
+        color: #ffffff;
+        transition: background-color 280ms var(--ease-out);
+      }
+
+      .state-watching .status-icon-wrap,
+      .state-caution .status-icon-wrap {
+        background-color: var(--state-caution);
+      }
+
+      .state-danger .status-icon-wrap {
+        background-color: var(--state-danger);
+      }
+
+      .status-kicker {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 2px;
+      }
+
+      .status-title {
+        margin: 0;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        color: var(--state-normal);
+        transition: color 220ms var(--ease-out);
+      }
+
+      .state-watching .status-title,
+      .state-caution .status-title {
+        color: #8f5c11;
+      }
+
+      .state-danger .status-title {
+        color: var(--state-danger);
+      }
+
+      .status-message {
+        margin: 12px 0 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .status-action-row {
+        margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      /* Unsupported Banner inside Monitor */
+      .unsupported-banner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 20px;
+        border-radius: 16px;
+        background-color: var(--state-caution-bg);
+        border: 1px solid var(--state-caution-border);
+      }
+
+      .unsupported-banner-text strong {
+        display: block;
+        font-size: 1.0625rem;
+        color: #8f5c11;
+        margin-bottom: 2px;
+      }
+
+      .unsupported-banner-text span {
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+      }
+
+      /* Card Header */
+      .card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .card-title {
+        margin: 0;
+        font-size: 1.1875rem;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .card-sub {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+      }
+
+      /* Sensor Metrics Grid */
+      .sensor-axes {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      @media (min-width: 560px) {
+        .sensor-axes {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+
+      .axis-cell {
+        padding: 14px;
+        border-radius: 14px;
+        background-color: var(--bg-canvas);
+        border: 1px solid var(--border-hairline);
+      }
+
+      .axis-cell.is-total {
+        background-color: var(--brand-mint-soft);
+        border-color: var(--state-normal-border);
+      }
+
+      .axis-label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+      }
+
+      .axis-value {
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-variant-numeric: tabular-nums;
+        font-size: 1.375rem;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .axis-unit {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        margin-left: 2px;
+        font-weight: 500;
+      }
+
+      /* Canvas Graph */
+      .graph-wrap {
+        position: relative;
+        width: 100%;
+        height: 190px;
+        border-radius: 14px;
+        background-color: #f9fbfa;
+        border: 1px solid var(--border-hairline);
+        overflow: hidden;
+      }
+
+      .graph-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .graph-legend {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px;
+        margin-top: 10px;
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .legend-line {
+        width: 14px;
+        height: 3px;
+        border-radius: 2px;
+        display: inline-block;
+      }
+
+      /* Test Mode Buttons */
+      .test-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      @media (min-width: 560px) {
+        .test-actions {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      /* Settings Form */
+      .setting-group {
+        padding: 14px 0;
+        border-top: 1px solid var(--border-hairline);
+      }
+
+      .setting-group:first-of-type {
+        border-top: none;
+        padding-top: 0;
+      }
+
+      .setting-label-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .setting-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .setting-val {
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-variant-numeric: tabular-nums;
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: var(--brand-mint);
+      }
+
+      .range-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--bg-subtle);
+        outline: none;
+        cursor: pointer;
+      }
+
+      .range-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--brand-mint);
+        border: 3px solid #ffffff;
+        box-shadow: 0 2px 6px rgba(22, 48, 43, 0.25);
+        cursor: pointer;
+      }
+
+      .range-slider::-moz-range-thumb {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--brand-mint);
+        border: 3px solid #ffffff;
+        box-shadow: 0 2px 6px rgba(22, 48, 43, 0.25);
+        cursor: pointer;
+      }
+
+      .range-ticks {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        margin-top: 6px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .phone-input-row {
+        display: flex;
+        gap: 10px;
+      }
+
+      .text-input {
+        flex: 1;
+        min-width: 0;
+        min-height: 48px;
+        padding: 10px 14px;
+        border-radius: var(--radius-control);
+        border: 1.5px solid var(--border-hairline);
+        background-color: #ffffff;
+        color: var(--text-primary);
+        font-family: inherit;
+        font-size: 1rem;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .text-input:focus {
+        outline: none;
+        border-color: var(--brand-mint);
+        box-shadow: 0 0 0 3px rgba(29, 122, 95, 0.16);
+      }
+
+      .save-feedback {
+        margin-top: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--brand-mint);
+        min-height: 20px;
+      }
+
+      /* History List */
+      .history-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .history-empty {
+        padding: 28px 16px;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.9375rem;
+        border-top: 1px solid var(--border-hairline);
+      }
+
+      .history-item {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 0;
+        border-top: 1px solid var(--border-hairline);
+      }
+
+      .history-state {
+        font-weight: 700;
+        font-size: 1rem;
+      }
+
+      .history-state.is-danger {
+        color: var(--state-danger);
+      }
+
+      .history-state.is-caution {
+        color: var(--state-caution);
+      }
+
+      .history-detail {
+        display: block;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 2px;
+      }
+
+      .history-time {
+        text-align: right;
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .history-peak {
+        display: block;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+        margin-top: 2px;
+      }
+
+      .btn-text-sm {
+        background: transparent;
+        border: 1px solid var(--border-hairline);
+        color: var(--text-secondary);
+        min-height: 44px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .btn-text-sm:hover {
+        background-color: var(--bg-canvas);
+        color: var(--text-primary);
+      }
+
+      /* Full-screen Red Danger Overlay */
+      .danger-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        background-color: var(--state-danger);
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 20px;
+        text-align: center;
+        overflow-y: auto;
+        animation: dangerFadeIn 220ms var(--ease-out);
+      }
+
+      @keyframes dangerFadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .danger-overlay-inner {
+        width: 100%;
+        max-width: 520px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+      }
+
+      .danger-alert-icon {
+        width: 84px;
+        height: 84px;
+        border-radius: 24px;
+        background-color: rgba(255, 255, 255, 0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .danger-heading {
+        margin: 0;
+        font-size: clamp(2rem, 6vw, 2.75rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+      }
+
+      .danger-sub {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.95);
+        text-wrap: balance;
+      }
+
+      .danger-timer-box {
+        padding: 12px 24px;
+        border-radius: 16px;
+        background-color: rgba(0, 0, 0, 0.22);
+        font-size: 1.125rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .btn-safe-huge {
+        width: 100%;
+        min-height: 72px;
+        font-size: 1.5rem;
+        font-weight: 800;
+        background-color: #ffffff;
+        color: var(--state-danger);
+        border-radius: 20px;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+      }
+
+      .btn-safe-huge:hover {
+        background-color: #f8f9fa;
+      }
+
+      .btn-call-guardian {
+        width: 100%;
+        min-height: 68px;
+        font-size: 1.3125rem;
+        font-weight: 800;
+        background-color: #16302b;
+        color: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+      }
+
+      .btn-call-guardian:hover {
+        background-color: #0f221e;
+      }
+
+      .danger-phone-note {
+        font-size: 0.9375rem;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="top-bar-inner">
+          <div class="brand-lockup">
+            <div class="brand-mark" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M9 12h6" />
+                <path d="M12 9v6" />
+              </svg>
+            </div>
+            <span class="brand-name">낙상 알리미</span>
+          </div>
+
+          <div class="header-actions">
+            <span id="headerSensorStatus" class="sensor-meta-text">대기 중</span>
+            <button id="downloadHtmlBtn" type="button" class="btn btn-secondary" style="min-height: 44px; padding: 8px 14px; font-size: 0.875rem;" title="단일 HTML 파일로 저장">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              HTML 저장
+            </button>
+            <button id="stopMonitorBtn" type="button" class="btn btn-outline-danger hidden">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="6" y="6" width="12" height="12" rx="2" />
+              </svg>
+              측정 중지
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-container">
+        <!-- 1. Initial Screen (Before sensor permission is granted) -->
+        <section id="welcomeScreen" class="welcome-wrap" aria-labelledby="welcomeTitle">
+          <div class="card">
+            <div class="welcome-hero-icon" aria-hidden="true">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              </svg>
+            </div>
+            <h1 id="welcomeTitle" class="welcome-title">혼자 계신 어르신과 환자를 위한 실시간 낙상 감지</h1>
+            <p class="welcome-desc">
+              스마트폰의 가속도 센서를 이용해 갑작스러운 넘어짐과 움직임을 바로 확인합니다.
+              위험 상황이 감지되면 큰 화면과 경고음으로 알리고, 응답이 없을 경우 보호자에게 즉시 연락할 수 있습니다.
+            </p>
+
+            <ul class="steps-list">
+              <li class="steps-item">
+                <span class="step-num" aria-hidden="true">1</span>
+                <div>
+                  <span class="step-text-title">센서 권한 허용 후 실시간 측정</span>
+                  <span class="step-text-sub">측정 시작 버튼을 눌러 기기의 움직임 센서 접근을 허용해 주세요.</span>
+                </div>
+              </li>
+              <li class="steps-item">
+                <span class="step-num" aria-hidden="true">2</span>
+                <div>
+                  <span class="step-text-title">충격 및 이후 움직임 자동 분석</span>
+                  <span class="step-text-sub">큰 충격 뒤 움직임이 없으면 낙상 위험으로 판단해 즉시 경고를 울립니다.</span>
+                </div>
+              </li>
+              <li class="steps-item">
+                <span class="step-num" aria-hidden="true">3</span>
+                <div>
+                  <span class="step-text-title">무응답 시 보호자 바로 전화 연결</span>
+                  <span class="step-text-sub">10초 동안 괜찮아요 버튼을 누르지 않으면 등록된 보호자 전화 버튼을 안내합니다.</span>
+                </div>
+              </li>
+            </ul>
+
+            <button id="startMonitorBtn" type="button" class="btn btn-primary btn-primary-lg">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="6 3 20 12 6 21 6 3" />
+              </svg>
+              측정 시작
+            </button>
+
+            <!-- Permission Denied Help Box -->
+            <div id="permissionDeniedBox" class="notice-box is-danger hidden" role="alert">
+              <h2 class="notice-box-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                센서 사용을 허용해 주세요
+              </h2>
+              <p>낙상 감지를 시작하려면 스마트폰의 동작 및 가속도 센서 권한이 필요합니다.</p>
+              <ul class="notice-list">
+                <li><strong>iPhone (Safari):</strong> 브라우저를 완전히 닫고 다시 열거나, <em>설정 &gt; Safari &gt; 동작 및 방향 접근</em>이 켜져 있는지 확인한 뒤 다시 [측정 시작]을 눌러 허용해 주세요.</li>
+                <li><strong>Android (Chrome):</strong> 주소창 왼쪽 아이콘 &gt; <em>권한 &gt; 동작 센서</em>를 허용으로 변경하고 페이지를 새로고침해 주세요.</li>
+                <li><strong>보안 연결 확인:</strong> 모바일 브라우저는 <code>https://</code> 주소 또는 로컬 파일 환경에서만 센서를 허용할 수 있습니다.</li>
+              </ul>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                <button id="retryPermissionBtn" type="button" class="btn btn-primary">다시 권한 요청</button>
+                <button id="fallbackTestModeBtn" type="button" class="btn btn-secondary">테스트 모드로 시작</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Active Monitoring Workspace -->
+        <section id="monitorScreen" class="dashboard hidden" aria-label="낙상 감지 모니터링 화면">
+          <!-- No Sensor Banner (Shown on PC / devices without accelerometer) -->
+          <div id="noSensorBanner" class="unsupported-banner hidden" role="status">
+            <div class="unsupported-banner-text">
+              <strong>이 기기에는 센서가 없어요</strong>
+              <span>현재 기기에서는 실시간 가속도 센서를 읽을 수 없어 테스트 모드만 사용할 수 있습니다.</span>
+            </div>
+            <button id="recheckSensorBtn" type="button" class="btn btn-secondary">센서 다시 확인</button>
+          </div>
+
+          <!-- Top Big Status Card -->
+          <div id="statusCard" class="status-card state-normal" role="status" aria-live="polite">
+            <div class="status-header">
+              <div class="status-main">
+                <div id="statusIconWrap" class="status-icon-wrap" aria-hidden="true">
+                  <!-- Icon dynamically updated -->
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="status-kicker">현재 안전 상태</div>
+                  <h1 id="statusTitle" class="status-title">정상</h1>
+                </div>
+              </div>
+            </div>
+            <p id="statusMessage" class="status-message">안전하게 이동 중입니다.</p>
+            <div id="cautionActionRow" class="status-action-row hidden">
+              <button id="cautionOkBtn" type="button" class="btn btn-caution">
+                괜찮아요 (정상으로 돌아가기)
+              </button>
+            </div>
+          </div>
+
+          <!-- 2-Column Main Grid -->
+          <div class="dashboard-grid">
+            <!-- Left Column: Live Sensor + Test Mode -->
+            <div class="col-stack">
+              <!-- Live Sensor Card -->
+              <article class="card">
+                <div class="card-head">
+                  <div>
+                    <h2 class="card-title">실시간 가속도 센서</h2>
+                    <span id="sensorSourceLabel" class="card-sub">중력 포함 가속도 (accelerationIncludingGravity)</span>
+                  </div>
+                </div>
+
+                <div class="sensor-axes">
+                  <div class="axis-cell">
+                    <span class="axis-label">X축</span>
+                    <span id="valX" class="axis-value">0.00</span><span class="axis-unit">m/s²</span>
+                  </div>
+                  <div class="axis-cell">
+                    <span class="axis-label">Y축</span>
+                    <span id="valY" class="axis-value">0.00</span><span class="axis-unit">m/s²</span>
+                  </div>
+                  <div class="axis-cell">
+                    <span class="axis-label">Z축</span>
+                    <span id="valZ" class="axis-value">9.80</span><span class="axis-unit">m/s²</span>
+                  </div>
+                  <div class="axis-cell is-total">
+                    <span class="axis-label">전체 크기</span>
+                    <span id="valMag" class="axis-value">9.80</span><span class="axis-unit">m/s²</span>
+                  </div>
+                </div>
+
+                <div class="graph-wrap">
+                  <canvas id="sensorCanvas" class="graph-canvas" aria-label="실시간 전체 가속도 크기 그래프"></canvas>
+                </div>
+                <div class="graph-legend">
+                  <span class="legend-item">
+                    <span class="legend-line" style="background-color: #1d7a5f;"></span>
+                    전체 가속도
+                  </span>
+                  <span class="legend-item">
+                    <span class="legend-line" style="background-color: #c0392b;"></span>
+                    충격 기준 (<span id="legendThreshold">25</span> m/s²)
+                  </span>
+                  <span class="legend-item">
+                    <span class="legend-line" style="background-color: #7d9690;"></span>
+                    중력 기준 (9.8 m/s²)
+                  </span>
+                </div>
+              </article>
+
+              <!-- Test Mode Card -->
+              <article class="card">
+                <div class="card-head">
+                  <div>
+                    <h2 class="card-title">테스트 모드</h2>
+                    <span class="card-sub">센서가 없거나 실내에서 동작을 시험할 때 가상 센서 값을 보냅니다</span>
+                  </div>
+                </div>
+                <div class="test-actions">
+                  <button id="simFallBtn" type="button" class="btn btn-danger-sim">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                    넘어짐 흉내 내기
+                  </button>
+                  <button id="simShakeMoveBtn" type="button" class="btn btn-caution-sim">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
+                    흔들고 다시 움직임 흉내 내기
+                  </button>
+                </div>
+              </article>
+            </div>
+
+            <!-- Right Column: Settings + History -->
+            <div class="col-stack">
+              <!-- Settings Card -->
+              <article class="card">
+                <div class="card-head">
+                  <div>
+                    <h2 class="card-title">감지 및 보호자 설정</h2>
+                    <span class="card-sub">변경한 설정은 기기에 자동 저장됩니다</span>
+                  </div>
+                </div>
+
+                <div class="setting-group">
+                  <div class="setting-label-row">
+                    <label for="thresholdSlider" class="setting-label">충격 기준값</label>
+                    <span class="setting-val"><span id="thresholdVal">25</span> m/s²</span>
+                  </div>
+                  <input
+                    id="thresholdSlider"
+                    type="range"
+                    class="range-slider"
+                    min="15"
+                    max="40"
+                    step="1"
+                    value="25"
+                  />
+                  <div class="range-ticks">
+                    <span>15 (민감)</span>
+                    <span>25 (기본)</span>
+                    <span>40 (둔감)</span>
+                  </div>
+                </div>
+
+                <div class="setting-group">
+                  <div class="setting-label-row">
+                    <label for="waitSlider" class="setting-label">충격 후 관찰 대기 시간</label>
+                    <span class="setting-val"><span id="waitVal">3</span>초</span>
+                  </div>
+                  <input
+                    id="waitSlider"
+                    type="range"
+                    class="range-slider"
+                    min="1"
+                    max="10"
+                    step="1"
+                    value="3"
+                  />
+                  <div class="range-ticks">
+                    <span>1초</span>
+                    <span>3초 (기본)</span>
+                    <span>10초</span>
+                  </div>
+                </div>
+
+                <div class="setting-group">
+                  <div class="setting-label-row">
+                    <label for="guardianPhoneInput" class="setting-label">보호자 전화번호</label>
+                  </div>
+                  <div class="phone-input-row">
+                    <input
+                      id="guardianPhoneInput"
+                      type="tel"
+                      class="text-input"
+                      placeholder="예: 010-1234-5678"
+                      autocomplete="tel"
+                    />
+                    <button id="savePhoneBtn" type="button" class="btn btn-primary">저장</button>
+                  </div>
+                  <div id="phoneSaveFeedback" class="save-feedback" aria-live="polite"></div>
+                </div>
+              </article>
+
+              <!-- History Card -->
+              <article class="card">
+                <div class="card-head">
+                  <div>
+                    <h2 class="card-title">감지 기록</h2>
+                    <span class="card-sub">주의 및 위험 발생 내역 (최근 20개 저장)</span>
+                  </div>
+                  <button id="clearHistoryBtn" type="button" class="btn-text-sm">기록 지우기</button>
+                </div>
+
+                <ul id="historyList" class="history-list">
+                  <li class="history-empty">아직 주의 또는 위험 기록이 없습니다.</li>
+                </ul>
+              </article>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Full-screen Red Danger Overlay -->
+    <div id="dangerOverlay" class="danger-overlay hidden" role="alertdialog" aria-modal="true" aria-labelledby="dangerOverlayTitle">
+      <div class="danger-overlay-inner">
+        <div class="danger-alert-icon" aria-hidden="true">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </div>
+
+        <h2 id="dangerOverlayTitle" class="danger-heading">위험 · 낙상 의심</h2>
+        <p id="dangerOverlayMessage" class="danger-sub">
+          넘어짐이 감지되고 움직임이 없습니다. 괜찮으시면 아래 큰 버튼을 눌러주세요.
+        </p>
+
+        <div id="dangerCountdownBox" class="danger-timer-box">
+          자동 보호자 연결 안내까지 <span id="dangerCountdownNum">10</span>초
+        </div>
+
+        <a id="callGuardianLink" href="tel:119" class="btn btn-call-guardian hidden">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+          </svg>
+          <span id="callGuardianLabel">보호자에게 전화</span>
+        </a>
+        <div id="dangerPhoneNote" class="danger-phone-note hidden"></div>
+
+        <button id="dangerOkBtn" type="button" class="btn btn-safe-huge">
+          괜찮아요
+        </button>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        const STORAGE_SETTINGS_KEY = "fallAlert_settings_v1";
+        const STORAGE_HISTORY_KEY = "fallAlert_history_v1";
+        const MAX_HISTORY_ITEMS = 20;
+        const GRAPH_SAMPLES = 120;
+        const GRAVITY = 9.8;
+
+        // DOM references
+        const welcomeScreen = document.getElementById("welcomeScreen");
+        const monitorScreen = document.getElementById("monitorScreen");
+        const startMonitorBtn = document.getElementById("startMonitorBtn");
+        const retryPermissionBtn = document.getElementById("retryPermissionBtn");
+        const fallbackTestModeBtn = document.getElementById("fallbackTestModeBtn");
+        const downloadHtmlBtn = document.getElementById("downloadHtmlBtn");
+        const stopMonitorBtn = document.getElementById("stopMonitorBtn");
+        const permissionDeniedBox = document.getElementById("permissionDeniedBox");
+        const noSensorBanner = document.getElementById("noSensorBanner");
+        const recheckSensorBtn = document.getElementById("recheckSensorBtn");
+        const headerSensorStatus = document.getElementById("headerSensorStatus");
+        const sensorSourceLabel = document.getElementById("sensorSourceLabel");
+
+        const statusCard = document.getElementById("statusCard");
+        const statusIconWrap = document.getElementById("statusIconWrap");
+        const statusTitle = document.getElementById("statusTitle");
+        const statusMessage = document.getElementById("statusMessage");
+        const cautionActionRow = document.getElementById("cautionActionRow");
+        const cautionOkBtn = document.getElementById("cautionOkBtn");
+
+        const valX = document.getElementById("valX");
+        const valY = document.getElementById("valY");
+        const valZ = document.getElementById("valZ");
+        const valMag = document.getElementById("valMag");
+        const sensorCanvas = document.getElementById("sensorCanvas");
+        const legendThreshold = document.getElementById("legendThreshold");
+
+        const simFallBtn = document.getElementById("simFallBtn");
+        const simShakeMoveBtn = document.getElementById("simShakeMoveBtn");
+
+        const thresholdSlider = document.getElementById("thresholdSlider");
+        const thresholdVal = document.getElementById("thresholdVal");
+        const waitSlider = document.getElementById("waitSlider");
+        const waitVal = document.getElementById("waitVal");
+        const guardianPhoneInput = document.getElementById("guardianPhoneInput");
+        const savePhoneBtn = document.getElementById("savePhoneBtn");
+        const phoneSaveFeedback = document.getElementById("phoneSaveFeedback");
+
+        const historyList = document.getElementById("historyList");
+        const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+
+        const dangerOverlay = document.getElementById("dangerOverlay");
+        const dangerOverlayMessage = document.getElementById("dangerOverlayMessage");
+        const dangerCountdownBox = document.getElementById("dangerCountdownBox");
+        const dangerCountdownNum = document.getElementById("dangerCountdownNum");
+        const callGuardianLink = document.getElementById("callGuardianLink");
+        const callGuardianLabel = document.getElementById("callGuardianLabel");
+        const dangerPhoneNote = document.getElementById("dangerPhoneNote");
+        const dangerOkBtn = document.getElementById("dangerOkBtn");
+
+        // App State
+        const state = {
+          screen: "welcome", // 'welcome' | 'monitor'
+          sensorMode: "idle", // 'idle' | 'active' | 'unsupported' | 'denied'
+          safetyState: "normal", // 'normal' | 'watching' | 'caution' | 'danger'
+          settings: loadSettings(),
+          history: loadHistory(),
+
+          // Real-time sensor values
+          x: 0,
+          y: 0,
+          z: 9.8,
+          mag: 9.8,
+          lastUiTextUpdate: 0,
+
+          // Graph buffer
+          samples: new Array(GRAPH_SAMPLES).fill({ mag: GRAVITY, state: "normal" }),
+
+          // Fall detection tracking
+          watchStartTime: 0,
+          watchPeakMag: 0,
+          postSettleSamples: [],
+          movementScore: 0,
+          prevSampleMag: GRAVITY,
+          cautionCalmSince: 0,
+          cooldownUntil: 0,
+
+          // Timers & Simulation
+          isMotionListening: false,
+          probeTimerId: null,
+          simIntervalId: null,
+          isSimulating: false,
+          watchTickId: null,
+          dangerIntervalId: null,
+          dangerRemaining: 10,
+
+          // Audio & Vibration
+          audioCtx: null,
+          alarmIntervalId: null,
+          vibrateIntervalId: null,
+          rafId: null
+        };
+
+        // ---------- Persistence (localStorage) ----------
+        function loadSettings() {
+          const defaults = { impactThreshold: 25, waitSeconds: 3, guardianPhone: "" };
+          try {
+            const raw = localStorage.getItem(STORAGE_SETTINGS_KEY);
+            if (!raw) return defaults;
+            const parsed = JSON.parse(raw);
+            return {
+              impactThreshold: clampNum(Number(parsed.impactThreshold), 15, 40, 25),
+              waitSeconds: clampNum(Number(parsed.waitSeconds), 1, 10, 3),
+              guardianPhone: typeof parsed.guardianPhone === "string" ? parsed.guardianPhone : ""
+            };
+          } catch (e) {
+            return defaults;
+          }
+        }
+
+        function saveSettings() {
+          try {
+            localStorage.setItem(STORAGE_SETTINGS_KEY, JSON.stringify(state.settings));
+          } catch (e) {
+            // Ignore storage quota errors cleanly
+          }
+        }
+
+        function loadHistory() {
+          try {
+            const raw = localStorage.getItem(STORAGE_HISTORY_KEY);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed.slice(0, MAX_HISTORY_ITEMS) : [];
+          } catch (e) {
+            return [];
+          }
+        }
+
+        function saveHistory() {
+          try {
+            localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(state.history.slice(0, MAX_HISTORY_ITEMS)));
+          } catch (e) {
+            // Ignore storage quota errors cleanly
+          }
+        }
+
+        function addHistoryRecord(type, label, detail, peakMag) {
+          const now = new Date();
+          const entry = {
+            id: now.getTime() + "_" + Math.random().toString(36).slice(2, 7),
+            type: type,
+            label: label,
+            detail: detail,
+            peakMag: Number(peakMag || 0).toFixed(1),
+            timeText: formatDateTime(now)
+          };
+          state.history.unshift(entry);
+          if (state.history.length > MAX_HISTORY_ITEMS) {
+            state.history = state.history.slice(0, MAX_HISTORY_ITEMS);
+          }
+          saveHistory();
+          renderHistory();
+        }
+
+        function clampNum(val, min, max, fallback) {
+          if (!Number.isFinite(val)) return fallback;
+          return Math.min(max, Math.max(min, Math.round(val)));
+        }
+
+        function formatDateTime(date) {
+          const month = date.getMonth() + 1;
+          const day = date.getDate();
+          const hours = String(date.getHours()).padStart(2, "0");
+          const mins = String(date.getMinutes()).padStart(2, "0");
+          const secs = String(date.getSeconds()).padStart(2, "0");
+          return month + "월 " + day + "일 " + hours + ":" + mins + ":" + secs;
+        }
+
+        // ---------- Web Audio API & Vibration (No External Files) ----------
+        function ensureAudioContext() {
+          try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return null;
+            if (!state.audioCtx) {
+              state.audioCtx = new AudioCtx();
+            }
+            if (state.audioCtx.state === "suspended") {
+              state.audioCtx.resume();
+            }
+            return state.audioCtx;
+          } catch (e) {
+            return null;
+          }
+        }
+
+        function playAlarmPulse() {
+          const ctx = ensureAudioContext();
+          if (!ctx) return;
+          try {
+            const now = ctx.currentTime;
+            // Two-tone urgent medical alert (880Hz -> 660Hz)
+            playTone(ctx, 880, now, 0.22);
+            playTone(ctx, 660, now + 0.25, 0.24);
+          } catch (e) {
+            // Ignore audio playback errors if blocked
+          }
+        }
+
+        function playTone(ctx, freq, startTime, duration) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, startTime);
+
+          gain.gain.setValueAtTime(0.001, startTime);
+          gain.gain.linearRampToValueAtTime(0.45, startTime + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(startTime);
+          osc.stop(startTime + duration + 0.02);
+        }
+
+        function startAlarmEffects() {
+          stopAlarmEffects();
+          playAlarmPulse();
+          state.alarmIntervalId = setInterval(playAlarmPulse, 950);
+
+          if ("vibrate" in navigator && typeof navigator.vibrate === "function") {
+            try {
+              navigator.vibrate([450, 200, 450, 200]);
+              state.vibrateIntervalId = setInterval(function () {
+                navigator.vibrate([450, 200, 450, 200]);
+              }, 1400);
+            } catch (e) {
+              // Ignore vibration errors
+            }
+          }
+        }
+
+        function stopAlarmEffects() {
+          if (state.alarmIntervalId) {
+            clearInterval(state.alarmIntervalId);
+            state.alarmIntervalId = null;
+          }
+          if (state.vibrateIntervalId) {
+            clearInterval(state.vibrateIntervalId);
+            state.vibrateIntervalId = null;
+          }
+          if ("vibrate" in navigator && typeof navigator.vibrate === "function") {
+            try {
+              navigator.vibrate(0);
+            } catch (e) {
+              // Ignore
+            }
+          }
+        }
+
+        function isLikelyMobileDevice() {
+          return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "") ||
+            (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);
+        }
+
+        async function checkAccelerometerDeniedOnMobile() {
+          if (!isLikelyMobileDevice()) return false;
+          if (navigator.permissions && typeof navigator.permissions.query === "function") {
+            try {
+              const perm = await navigator.permissions.query({ name: "accelerometer" });
+              return Boolean(perm && perm.state === "denied");
+            } catch (e) {
+              return false;
+            }
+          }
+          return false;
+        }
+
+        // ---------- Sensor Permission & Attachment ----------
+        async function requestAndStartSensor() {
+          ensureAudioContext();
+          permissionDeniedBox.classList.add("hidden");
+          headerSensorStatus.textContent = "센서 확인 중...";
+
+          // iOS 13+ Safari explicit permission API
+          if (
+            typeof window.DeviceMotionEvent !== "undefined" &&
+            typeof window.DeviceMotionEvent.requestPermission === "function"
+          ) {
+            try {
+              const permissionState = await window.DeviceMotionEvent.requestPermission();
+              if (permissionState === "granted") {
+                attachMotionListenerWithProbe();
+              } else {
+                handlePermissionDenied();
+              }
+            } catch (err) {
+              handlePermissionDenied();
+            }
+            return;
+          }
+
+          // Android / Desktop Chrome / Standard browsers
+          if (typeof window.DeviceMotionEvent === "undefined") {
+            enterTestOnlyMode();
+            return;
+          }
+
+          // Always probe devicemotion directly first so PC / iframe / file:// never gets falsely trapped
+          attachMotionListenerWithProbe();
+        }
+
+        function attachMotionListenerWithProbe() {
+          detachMotionListener();
+          state.isMotionListening = true;
+          window.addEventListener("devicemotion", handleDeviceMotion);
+
+          let resolved = false;
+          state.probeTimerId = setTimeout(async function () {
+            if (!resolved && state.sensorMode !== "active") {
+              detachMotionListener();
+              const mobileDenied = await checkAccelerometerDeniedOnMobile();
+              if (mobileDenied) {
+                handlePermissionDenied();
+              } else {
+                // No valid sensor data arrived within probe window -> unsupported device (e.g. PC)
+                enterTestOnlyMode();
+              }
+            }
+          }, 650);
+
+          // Store resolver flag on window listener handler check
+          state._probeOnValidData = function () {
+            if (resolved) return;
+            resolved = true;
+            if (state.probeTimerId) {
+              clearTimeout(state.probeTimerId);
+              state.probeTimerId = null;
+            }
+            enterActiveSensorMode();
+          };
+        }
+
+        function detachMotionListener() {
+          if (state.probeTimerId) {
+            clearTimeout(state.probeTimerId);
+            state.probeTimerId = null;
+          }
+          if (state.isMotionListening) {
+            window.removeEventListener("devicemotion", handleDeviceMotion);
+            state.isMotionListening = false;
+          }
+          state._probeOnValidData = null;
+        }
+
+        function handlePermissionDenied() {
+          detachMotionListener();
+          state.sensorMode = "denied";
+          state.screen = "welcome";
+          headerSensorStatus.textContent = "권한 필요";
+          permissionDeniedBox.classList.remove("hidden");
+          welcomeScreen.classList.remove("hidden");
+          monitorScreen.classList.add("hidden");
+          stopMonitorBtn.classList.add("hidden");
+        }
+
+        function enterActiveSensorMode() {
+          state.sensorMode = "active";
+          state.screen = "monitor";
+          headerSensorStatus.textContent = "센서 연결됨";
+          sensorSourceLabel.textContent = "실시간 기기 가속도 센서 작동 중 (accelerationIncludingGravity)";
+          noSensorBanner.classList.add("hidden");
+          welcomeScreen.classList.add("hidden");
+          monitorScreen.classList.remove("hidden");
+          stopMonitorBtn.classList.remove("hidden");
+          setSafetyState("normal");
+          startGraphLoop();
+        }
+
+        function enterTestOnlyMode() {
+          state.sensorMode = "unsupported";
+          state.screen = "monitor";
+          headerSensorStatus.textContent = "테스트 모드";
+          sensorSourceLabel.textContent = "센서 없음 · 테스트 모드로 가상 가속도 표시";
+          noSensorBanner.classList.remove("hidden");
+          welcomeScreen.classList.add("hidden");
+          monitorScreen.classList.remove("hidden");
+          stopMonitorBtn.classList.remove("hidden");
+          setSafetyState("normal");
+          startGraphLoop();
+        }
+
+        function stopMonitoring() {
+          stopSimulation();
+          detachMotionListener();
+          stopWatchLoop();
+          stopDangerFlow();
+          stopGraphLoop();
+
+          state.safetyState = "normal";
+          state.sensorMode = "idle";
+          state.screen = "welcome";
+          headerSensorStatus.textContent = "측정 중지됨";
+
+          permissionDeniedBox.classList.add("hidden");
+          monitorScreen.classList.add("hidden");
+          welcomeScreen.classList.remove("hidden");
+          stopMonitorBtn.classList.add("hidden");
+        }
+
+        // ---------- Real DeviceMotion Handler ----------
+        function handleDeviceMotion(event) {
+          const acc = event.accelerationIncludingGravity;
+          if (!acc) return;
+
+          const hasValidAxis = acc.x !== null || acc.y !== null || acc.z !== null;
+          if (!hasValidAxis) return;
+
+          if (typeof state._probeOnValidData === "function") {
+            state._probeOnValidData();
+          }
+
+          // Pause feeding real sensor noise while user explicitly runs a simulation test
+          if (state.isSimulating) return;
+
+          const x = typeof acc.x === "number" ? acc.x : 0;
+          const y = typeof acc.y === "number" ? acc.y : 0;
+          const z = typeof acc.z === "number" ? acc.z : 0;
+          processSample(x, y, z);
+        }
+
+        // ---------- Core Fall Detection Algorithm ----------
+        function processSample(x, y, z) {
+          const mag = Math.sqrt(x * x + y * y + z * z);
+          state.x = x;
+          state.y = y;
+          state.z = z;
+          state.mag = mag;
+
+          // Push to canvas graph buffer
+          state.samples.push({ mag: mag, state: state.safetyState });
+          if (state.samples.length > GRAPH_SAMPLES) {
+            state.samples.shift();
+          }
+
+          // Update numerical readouts at max ~20Hz so numbers stay legible
+          const now = Date.now();
+          if (now - state.lastUiTextUpdate >= 50) {
+            state.lastUiTextUpdate = now;
+            valX.textContent = x.toFixed(2);
+            valY.textContent = y.toFixed(2);
+            valZ.textContent = z.toFixed(2);
+            valMag.textContent = mag.toFixed(2);
+          }
+
+          // State machine
+          if (state.safetyState === "normal") {
+            if (now >= state.cooldownUntil && mag >= state.settings.impactThreshold) {
+              beginWatchingAfterImpact(mag, now);
+            }
+          } else if (state.safetyState === "watching") {
+            state.watchPeakMag = Math.max(state.watchPeakMag, mag);
+            const elapsedMs = now - state.watchStartTime;
+
+            // Ignore initial 450ms impact bounce/ringing before measuring post-impact movement
+            if (elapsedMs >= 450) {
+              state.postSettleSamples.push(mag);
+              const devFromGravity = Math.abs(mag - GRAVITY);
+              const stepDelta = Math.abs(mag - state.prevSampleMag);
+
+              if (devFromGravity >= 2.6 || stepDelta >= 2.2) {
+                state.movementScore += 1;
+              }
+
+              // If clear voluntary/continuous movement happens during wait window -> Caution
+              if (state.movementScore >= 3 && elapsedMs >= 900) {
+                triggerCaution();
+              }
+            }
+
+            if (state.safetyState === "watching" && elapsedMs >= state.settings.waitSeconds * 1000) {
+              if (state.movementScore >= 3) {
+                triggerCaution();
+              } else {
+                triggerDanger();
+              }
+            }
+          } else if (state.safetyState === "caution") {
+            // Optional gentle auto-return if completely calm for 10 seconds
+            if (Math.abs(mag - GRAVITY) < 1.6) {
+              if (!state.cautionCalmSince) {
+                state.cautionCalmSince = now;
+              } else if (now - state.cautionCalmSince >= 10000) {
+                acknowledgeToNormal();
+              }
+            } else {
+              state.cautionCalmSince = 0;
+            }
+          }
+
+          state.prevSampleMag = mag;
+        }
+
+        function beginWatchingAfterImpact(initialMag, now) {
+          state.safetyState = "watching";
+          state.watchStartTime = now;
+          state.watchPeakMag = initialMag;
+          state.postSettleSamples = [];
+          state.movementScore = 0;
+          state.prevSampleMag = initialMag;
+
+          setSafetyState("watching");
+          stopWatchLoop();
+          state.watchTickId = setInterval(function () {
+            if (state.safetyState !== "watching") {
+              stopWatchLoop();
+              return;
+            }
+            const elapsed = Date.now() - state.watchStartTime;
+            const totalMs = state.settings.waitSeconds * 1000;
+            const remainSec = Math.max(0, Math.ceil((totalMs - elapsed) / 1000));
+            statusMessage.textContent =
+              "큰 충격(" + state.watchPeakMag.toFixed(1) + " m/s²)이 감지되었습니다. " + remainSec + "초 동안 움직임을 확인합니다.";
+
+            // Also enforce timeout even when sensor stops firing (e.g., stationary device)
+            if (elapsed >= totalMs) {
+              if (state.movementScore >= 3) {
+                triggerCaution();
+              } else {
+                triggerDanger();
+              }
+            }
+          }, 150);
+        }
+
+        function stopWatchLoop() {
+          if (state.watchTickId) {
+            clearInterval(state.watchTickId);
+            state.watchTickId = null;
+          }
+        }
+
+        function triggerCaution() {
+          stopWatchLoop();
+          state.cautionCalmSince = 0;
+          setSafetyState("caution");
+          addHistoryRecord(
+            "caution",
+            "주의",
+            "큰 움직임이 감지되었습니다 (충격 후 움직임 확인)",
+            state.watchPeakMag
+          );
+        }
+
+        function triggerDanger() {
+          stopWatchLoop();
+          setSafetyState("danger");
+          addHistoryRecord(
+            "danger",
+            "위험 (낙상 의심)",
+            "충격 후 움직임 없음 — 경고 발령",
+            state.watchPeakMag
+          );
+          startDangerFlow();
+        }
+
+        function acknowledgeToNormal() {
+          stopSimulation();
+          stopWatchLoop();
+          stopDangerFlow();
+          state.cooldownUntil = Date.now() + 1800;
+          setSafetyState("normal");
+        }
+
+        function setSafetyState(nextState) {
+          state.safetyState = nextState;
+          statusCard.classList.remove("state-normal", "state-watching", "state-caution", "state-danger");
+          statusCard.classList.add("state-" + nextState);
+          cautionActionRow.classList.add("hidden");
+
+          if (nextState === "normal") {
+            statusTitle.textContent = "정상";
+            statusMessage.textContent = "안전하게 이동 중입니다.";
+            statusIconWrap.innerHTML =
+              '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+          } else if (nextState === "watching") {
+            statusTitle.textContent = "충격 감지";
+            statusMessage.textContent =
+              "큰 충격이 감지되었습니다. " + state.settings.waitSeconds + "초 동안 움직임을 확인합니다.";
+            statusIconWrap.innerHTML =
+              '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+          } else if (nextState === "caution") {
+            statusTitle.textContent = "주의";
+            statusMessage.textContent = "큰 움직임이 감지되었습니다. 괜찮으신가요?";
+            cautionActionRow.classList.remove("hidden");
+            statusIconWrap.innerHTML =
+              '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+          } else if (nextState === "danger") {
+            statusTitle.textContent = "위험 (낙상 의심)";
+            statusMessage.textContent = "충격 후 움직임이 없습니다. 즉시 상태를 확인하세요.";
+            statusIconWrap.innerHTML =
+              '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+          }
+        }
+
+        // ---------- Full-Screen Danger Flow (Audio + Vibration + 10s Timer + Call) ----------
+        function startDangerFlow() {
+          stopDangerFlow();
+          state.dangerRemaining = 10;
+
+          dangerOverlayMessage.textContent =
+            "넘어짐이 감지되고 움직임이 없습니다. 괜찮으시면 아래 큰 버튼을 눌러주세요.";
+          dangerCountdownNum.textContent = "10";
+          dangerCountdownBox.classList.remove("hidden");
+          callGuardianLink.classList.add("hidden");
+          dangerPhoneNote.classList.add("hidden");
+          dangerOverlay.classList.remove("hidden");
+
+          startAlarmEffects();
+
+          state.dangerIntervalId = setInterval(function () {
+            state.dangerRemaining -= 1;
+            if (state.dangerRemaining > 0) {
+              dangerCountdownNum.textContent = String(state.dangerRemaining);
+            } else {
+              clearInterval(state.dangerIntervalId);
+              state.dangerIntervalId = null;
+              showNoResponseGuardianCall();
+            }
+          }, 1000);
+        }
+
+        function showNoResponseGuardianCall() {
+          dangerCountdownBox.classList.add("hidden");
+          dangerOverlayMessage.textContent = "응답이 없습니다. 보호자에게 연락하세요";
+
+          const rawPhone = (state.settings.guardianPhone || "").trim();
+          const digitsOnly = rawPhone.replace(/[^0-9+*#]/g, "");
+
+          if (digitsOnly.length > 0) {
+            callGuardianLink.setAttribute("href", "tel:" + digitsOnly);
+            callGuardianLabel.textContent = "보호자에게 전화 (" + rawPhone + ")";
+            dangerPhoneNote.textContent = "등록된 보호자 번호로 바로 전화를 겁니다.";
+          } else {
+            callGuardianLink.setAttribute("href", "tel:119");
+            callGuardianLabel.textContent = "보호자에게 전화 (미등록 · 119 연결)";
+            dangerPhoneNote.textContent = "설정 카드에 보호자 번호를 입력하면 해당 번호로 바로 연결됩니다.";
+          }
+
+          callGuardianLink.classList.remove("hidden");
+          dangerPhoneNote.classList.remove("hidden");
+        }
+
+        function stopDangerFlow() {
+          if (state.dangerIntervalId) {
+            clearInterval(state.dangerIntervalId);
+            state.dangerIntervalId = null;
+          }
+          stopAlarmEffects();
+          dangerOverlay.classList.add("hidden");
+        }
+
+        // ---------- Test Mode Simulations ----------
+        function stopSimulation() {
+          if (state.simIntervalId) {
+            clearInterval(state.simIntervalId);
+            state.simIntervalId = null;
+          }
+          state.isSimulating = false;
+        }
+
+        function simulateFall() {
+          ensureAudioContext();
+          stopSimulation();
+          stopWatchLoop();
+          stopDangerFlow();
+          state.cooldownUntil = 0;
+          setSafetyState("normal");
+
+          state.isSimulating = true;
+          const startTime = Date.now();
+          const peakTarget = Math.max(33, state.settings.impactThreshold + 7);
+          const totalDurationMs = (state.settings.waitSeconds + 1.5) * 1000;
+
+          state.simIntervalId = setInterval(function () {
+            const elapsed = Date.now() - startTime;
+            if (elapsed > totalDurationMs) {
+              stopSimulation();
+              return;
+            }
+
+            let x = 0, y = 0, z = 9.8;
+            if (elapsed < 180) {
+              // Brief free-fall drop before hitting ground
+              x = 0.8;
+              y = -1.2;
+              z = 2.6;
+            } else if (elapsed < 340) {
+              // Sharp impact spike exceeding threshold
+              x = peakTarget * 0.52;
+              y = -peakTarget * 0.44;
+              z = peakTarget * 0.73;
+            } else if (elapsed < 450) {
+              // Quick rebound settle
+              x = 5.4;
+              y = -3.1;
+              z = 7.9;
+            } else {
+              // Lying motionless on floor (magnitude stays ~9.8 m/s²)
+              const jitter = (Math.random() - 0.5) * 0.14;
+              x = 9.55 + jitter;
+              y = 1.65;
+              z = 1.42;
+            }
+            processSample(x, y, z);
+          }, 33);
+        }
+
+        function simulateShakeAndMove() {
+          ensureAudioContext();
+          stopSimulation();
+          stopWatchLoop();
+          stopDangerFlow();
+          state.cooldownUntil = 0;
+          setSafetyState("normal");
+
+          state.isSimulating = true;
+          const startTime = Date.now();
+          const peakTarget = Math.max(31, state.settings.impactThreshold + 5);
+          const totalDurationMs = Math.max(2600, state.settings.waitSeconds * 1000 + 400);
+
+          state.simIntervalId = setInterval(function () {
+            const elapsed = Date.now() - startTime;
+            if (elapsed > totalDurationMs) {
+              stopSimulation();
+              return;
+            }
+
+            let x = 0, y = 0, z = 9.8;
+            if (elapsed < 220) {
+              // Sharp impact / shake spike
+              x = peakTarget * 0.62;
+              y = peakTarget * 0.48;
+              z = peakTarget * 0.62;
+            } else if (elapsed < 500) {
+              // Brief pause right after impact
+              x = 1.1;
+              y = 2.0;
+              z = 9.5;
+            } else {
+              // Active post-impact movement (getting up / walking)
+              const t = elapsed / 110;
+              x = 5.2 * Math.sin(t);
+              y = 4.6 * Math.cos(t * 1.3);
+              z = 9.8 + 4.4 * Math.sin(t * 1.7);
+            }
+            processSample(x, y, z);
+          }, 33);
+        }
+
+        // ---------- Real-Time Canvas Graph ----------
+        function startGraphLoop() {
+          if (state.rafId) return;
+          function frame() {
+            drawGraph();
+            state.rafId = requestAnimationFrame(frame);
+          }
+          state.rafId = requestAnimationFrame(frame);
+        }
+
+        function stopGraphLoop() {
+          if (state.rafId) {
+            cancelAnimationFrame(state.rafId);
+            state.rafId = null;
+          }
+        }
+
+        function drawGraph() {
+          if (!sensorCanvas) return;
+          const rect = sensorCanvas.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0) return;
+
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const targetW = Math.round(rect.width * dpr);
+          const targetH = Math.round(rect.height * dpr);
+          if (sensorCanvas.width !== targetW || sensorCanvas.height !== targetH) {
+            sensorCanvas.width = targetW;
+            sensorCanvas.height = targetH;
+          }
+
+          const ctx = sensorCanvas.getContext("2d");
+          if (!ctx) return;
+          ctx.save();
+          ctx.scale(dpr, dpr);
+
+          const w = rect.width;
+          const h = rect.height;
+          const padTop = 14;
+          const padBottom = 14;
+          const plotH = h - padTop - padBottom;
+          const maxVal = Math.max(45, state.settings.impactThreshold + 10);
+
+          const toY = function (v) {
+            const clamped = Math.max(0, Math.min(maxVal, v));
+            return padTop + plotH - (clamped / maxVal) * plotH;
+          };
+
+          // Clear
+          ctx.clearRect(0, 0, w, h);
+
+          // Subtle horizontal grid lines
+          ctx.strokeStyle = "#e3ece7";
+          ctx.lineWidth = 1;
+          [10, 20, 30, 40].forEach(function (tick) {
+            if (tick <= maxVal) {
+              const y = Math.round(toY(tick)) + 0.5;
+              ctx.beginPath();
+              ctx.moveTo(0, y);
+              ctx.lineTo(w, y);
+              ctx.stroke();
+            }
+          });
+
+          // Gravity 9.8 dashed line
+          const gravY = toY(GRAVITY);
+          ctx.save();
+          ctx.setLineDash([4, 4]);
+          ctx.strokeStyle = "#7d9690";
+          ctx.lineWidth = 1.25;
+          ctx.beginPath();
+          ctx.moveTo(0, gravY);
+          ctx.lineTo(w, gravY);
+          ctx.stroke();
+          ctx.restore();
+
+          // Impact threshold dashed line
+          const threshY = toY(state.settings.impactThreshold);
+          ctx.save();
+          ctx.setLineDash([6, 4]);
+          ctx.strokeStyle = "#c0392b";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(0, threshY);
+          ctx.lineTo(w, threshY);
+          ctx.stroke();
+          ctx.restore();
+
+          // Threshold label
+          ctx.fillStyle = "#c0392b";
+          ctx.font = "600 11px sans-serif";
+          ctx.fillText("충격 기준 " + state.settings.impactThreshold + " m/s²", 8, Math.max(12, threshY - 5));
+
+          // Signal color based on current state
+          let strokeColor = "#1d7a5f";
+          let fillTop = "rgba(29, 122, 95, 0.22)";
+          if (state.safetyState === "watching" || state.safetyState === "caution") {
+            strokeColor = "#b7791f";
+            fillTop = "rgba(183, 121, 31, 0.22)";
+          } else if (state.safetyState === "danger") {
+            strokeColor = "#c0392b";
+            fillTop = "rgba(192, 57, 43, 0.24)";
+          }
+
+          // Plot magnitude line
+          const len = state.samples.length;
+          if (len > 1) {
+            const stepX = w / (len - 1);
+
+            ctx.beginPath();
+            for (let i = 0; i < len; i++) {
+              const px = i * stepX;
+              const py = toY(state.samples[i].mag);
+              if (i === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
+
+            // Area fill
+            ctx.save();
+            ctx.lineTo(w, h);
+            ctx.lineTo(0, h);
+            ctx.closePath();
+            const grad = ctx.createLinearGradient(0, padTop, 0, h);
+            grad.addColorStop(0, fillTop);
+            grad.addColorStop(1, "rgba(255, 255, 255, 0)");
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.restore();
+
+            // Stroke line
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 2.4;
+            ctx.lineJoin = "round";
+            ctx.lineCap = "round";
+            ctx.stroke();
+
+            // Latest sample dot
+            const lastY = toY(state.samples[len - 1].mag);
+            ctx.fillStyle = strokeColor;
+            ctx.beginPath();
+            ctx.arc(w - 3, lastY, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.restore();
+        }
+
+        // ---------- Render Settings & History ----------
+        function syncSettingsUi() {
+          thresholdSlider.value = String(state.settings.impactThreshold);
+          thresholdVal.textContent = String(state.settings.impactThreshold);
+          legendThreshold.textContent = String(state.settings.impactThreshold);
+
+          waitSlider.value = String(state.settings.waitSeconds);
+          waitVal.textContent = String(state.settings.waitSeconds);
+
+          guardianPhoneInput.value = state.settings.guardianPhone;
+        }
+
+        function renderHistory() {
+          historyList.innerHTML = "";
+          if (!state.history.length) {
+            const emptyLi = document.createElement("li");
+            emptyLi.className = "history-empty";
+            emptyLi.textContent = "아직 주의 또는 위험 기록이 없습니다.";
+            historyList.appendChild(emptyLi);
+            return;
+          }
+
+          state.history.forEach(function (item) {
+            const li = document.createElement("li");
+            li.className = "history-item";
+
+            const left = document.createElement("div");
+            const stateSpan = document.createElement("span");
+            stateSpan.className = "history-state " + (item.type === "danger" ? "is-danger" : "is-caution");
+            stateSpan.textContent = item.label;
+
+            const detailSpan = document.createElement("span");
+            detailSpan.className = "history-detail";
+            detailSpan.textContent = item.detail;
+
+            left.appendChild(stateSpan);
+            left.appendChild(detailSpan);
+
+            const right = document.createElement("div");
+            right.className = "history-time";
+            const timeText = document.createTextNode(item.timeText);
+            const peakSpan = document.createElement("span");
+            peakSpan.className = "history-peak";
+            peakSpan.textContent = "최대 " + item.peakMag + " m/s²";
+
+            right.appendChild(timeText);
+            right.appendChild(peakSpan);
+
+            li.appendChild(left);
+            li.appendChild(right);
+            historyList.appendChild(li);
+          });
+        }
+
+        // ---------- Standalone Single-File HTML Export ----------
+        function downloadStandaloneHtml() {
+          const clone = document.documentElement.cloneNode(true);
+
+          // Remove any dev-server injected external scripts (e.g. /@vite/client)
+          const externalScripts = clone.querySelectorAll("script[src]");
+          externalScripts.forEach(function (el) {
+            el.parentNode.removeChild(el);
+          });
+
+          // Ensure clean initial DOM state in the exported standalone file
+          const cWelcome = clone.querySelector("#welcomeScreen");
+          const cMonitor = clone.querySelector("#monitorScreen");
+          const cStopBtn = clone.querySelector("#stopMonitorBtn");
+          const cPermBox = clone.querySelector("#permissionDeniedBox");
+          const cNoSensor = clone.querySelector("#noSensorBanner");
+          const cOverlay = clone.querySelector("#dangerOverlay");
+          const cHeaderStatus = clone.querySelector("#headerSensorStatus");
+          const cCautionRow = clone.querySelector("#cautionActionRow");
+          const cHistory = clone.querySelector("#historyList");
+          const cFeedback = clone.querySelector("#phoneSaveFeedback");
+
+          if (cWelcome) cWelcome.classList.remove("hidden");
+          if (cMonitor) cMonitor.classList.add("hidden");
+          if (cStopBtn) cStopBtn.classList.add("hidden");
+          if (cPermBox) cPermBox.classList.add("hidden");
+          if (cNoSensor) cNoSensor.classList.add("hidden");
+          if (cOverlay) cOverlay.classList.add("hidden");
+          if (cCautionRow) cCautionRow.classList.add("hidden");
+          if (cHeaderStatus) cHeaderStatus.textContent = "대기 중";
+          if (cFeedback) cFeedback.textContent = "";
+          if (cHistory) {
+            cHistory.innerHTML = '<li class="history-empty">아직 주의 또는 위험 기록이 없습니다.</li>';
+          }
+
+          const htmlText = "<!doctype html>\n" + clone.outerHTML;
+          const blob = new Blob([htmlText], { type: "text/html;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "fall-alert.html";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function () {
+            URL.revokeObjectURL(url);
+          }, 1500);
+
+          const prevStatus = headerSensorStatus.textContent;
+          headerSensorStatus.textContent = "fall-alert.html 저장됨";
+          setTimeout(function () {
+            if (headerSensorStatus.textContent === "fall-alert.html 저장됨") {
+              headerSensorStatus.textContent = prevStatus;
+            }
+          }, 2500);
+        }
+
+        // ---------- Event Listeners ----------
+        startMonitorBtn.addEventListener("click", requestAndStartSensor);
+        retryPermissionBtn.addEventListener("click", requestAndStartSensor);
+        fallbackTestModeBtn.addEventListener("click", function () {
+          ensureAudioContext();
+          permissionDeniedBox.classList.add("hidden");
+          enterTestOnlyMode();
+        });
+        recheckSensorBtn.addEventListener("click", requestAndStartSensor);
+        downloadHtmlBtn.addEventListener("click", downloadStandaloneHtml);
+        stopMonitorBtn.addEventListener("click", stopMonitoring);
+
+        cautionOkBtn.addEventListener("click", acknowledgeToNormal);
+        dangerOkBtn.addEventListener("click", acknowledgeToNormal);
+
+        simFallBtn.addEventListener("click", simulateFall);
+        simShakeMoveBtn.addEventListener("click", simulateShakeAndMove);
+
+        thresholdSlider.addEventListener("input", function () {
+          state.settings.impactThreshold = clampNum(Number(thresholdSlider.value), 15, 40, 25);
+          thresholdVal.textContent = String(state.settings.impactThreshold);
+          legendThreshold.textContent = String(state.settings.impactThreshold);
+          saveSettings();
+        });
+
+        waitSlider.addEventListener("input", function () {
+          state.settings.waitSeconds = clampNum(Number(waitSlider.value), 1, 10, 3);
+          waitVal.textContent = String(state.settings.waitSeconds);
+          saveSettings();
+        });
+
+        savePhoneBtn.addEventListener("click", function () {
+          const val = guardianPhoneInput.value.trim();
+          state.settings.guardianPhone = val;
+          saveSettings();
+          phoneSaveFeedback.textContent = val
+            ? "보호자 번호(" + val + ")가 저장되었습니다."
+            : "보호자 번호가 비워졌습니다.";
+          setTimeout(function () {
+            phoneSaveFeedback.textContent = "";
+          }, 3000);
+        });
+
+        clearHistoryBtn.addEventListener("click", function () {
+          state.history = [];
+          saveHistory();
+          renderHistory();
+        });
+
+        // Initialize UI from localStorage
+        syncSettingsUi();
+        renderHistory();
+
+        // If opened from a browser "Save Page As (Complete)" snapshot taken while monitoring was active, resume cleanly
+        if (!monitorScreen.classList.contains("hidden")) {
+          enterTestOnlyMode();
+        }
+      })();
+    </script>
+  </body>
+</html>
