@@ -1,0 +1,2756 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>FOCUS ON - 나에게 집중하는 시간</title>
+  <meta name="description" content="스마트폰 움직임을 감지하여 공부 집중을 돕는 미니멀 집중력 타이머 FOCUS ON" />
+  <style>
+/*! tailwindcss v4.3.5 | MIT License | https://tailwindcss.com */
+@layer properties;
+@layer theme, base, components, utilities;
+@layer theme {
+  :root, :host {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+      "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+      "Segoe UI Symbol", "Noto Color Emoji";
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+      "Courier New", monospace;
+    --color-amber-50: oklch(98.7% 0.022 95.277);
+    --color-amber-100: oklch(96.2% 0.059 95.617);
+    --color-amber-200: oklch(92.4% 0.12 95.746);
+    --color-amber-400: oklch(82.8% 0.189 84.429);
+    --color-amber-500: oklch(76.9% 0.188 70.08);
+    --color-amber-600: oklch(66.6% 0.179 58.318);
+    --color-amber-700: oklch(55.5% 0.163 48.998);
+    --color-amber-800: oklch(47.3% 0.137 46.201);
+    --color-rose-50: oklch(96.9% 0.015 12.422);
+    --color-rose-400: oklch(71.2% 0.194 13.428);
+    --color-rose-500: oklch(64.5% 0.246 16.439);
+    --color-rose-600: oklch(58.6% 0.253 17.585);
+    --color-slate-100: oklch(96.8% 0.007 247.896);
+    --color-slate-200: oklch(92.9% 0.013 255.508);
+    --color-slate-300: oklch(86.9% 0.022 252.894);
+    --color-slate-400: oklch(70.4% 0.04 256.788);
+    --color-slate-500: oklch(55.4% 0.046 257.417);
+    --color-slate-700: oklch(37.2% 0.044 257.287);
+    --color-black: #000;
+    --color-white: #fff;
+    --spacing: 0.25rem;
+    --container-sm: 24rem;
+    --container-md: 28rem;
+    --container-xl: 36rem;
+    --text-xs: 0.75rem;
+    --text-xs--line-height: calc(1 / 0.75);
+    --text-sm: 0.875rem;
+    --text-sm--line-height: calc(1.25 / 0.875);
+    --text-base: 1rem;
+    --text-base--line-height: calc(1.5 / 1);
+    --text-lg: 1.125rem;
+    --text-lg--line-height: calc(1.75 / 1.125);
+    --text-xl: 1.25rem;
+    --text-xl--line-height: calc(1.75 / 1.25);
+    --text-2xl: 1.5rem;
+    --text-2xl--line-height: calc(2 / 1.5);
+    --text-5xl: 3rem;
+    --text-5xl--line-height: 1;
+    --text-6xl: 3.75rem;
+    --text-6xl--line-height: 1;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --tracking-tight: -0.025em;
+    --tracking-wide: 0.025em;
+    --leading-relaxed: 1.625;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    --radius-2xl: 1rem;
+    --radius-3xl: 1.5rem;
+    --drop-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.15);
+    --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    --animate-bounce: bounce 1s infinite;
+    --blur-sm: 8px;
+    --blur-md: 12px;
+    --default-transition-duration: 150ms;
+    --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    --default-font-family: var(--font-sans);
+    --default-mono-font-family: var(--font-mono);
+  }
+}
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
+  }
+  html, :host {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    font-family: var(--default-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji");
+    font-feature-settings: var(--default-font-feature-settings, normal);
+    font-variation-settings: var(--default-font-variation-settings, normal);
+    -webkit-tap-highlight-color: transparent;
+  }
+  hr {
+    height: 0;
+    color: inherit;
+    border-top-width: 1px;
+  }
+  abbr:where([title]) {
+    -webkit-text-decoration: underline dotted;
+    text-decoration: underline dotted;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  a {
+    color: inherit;
+    -webkit-text-decoration: inherit;
+    text-decoration: inherit;
+  }
+  b, strong {
+    font-weight: bolder;
+  }
+  code, kbd, samp, pre {
+    font-family: var(--default-mono-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
+    font-feature-settings: var(--default-mono-font-feature-settings, normal);
+    font-variation-settings: var(--default-mono-font-variation-settings, normal);
+    font-size: 1em;
+  }
+  small {
+    font-size: 80%;
+  }
+  sub, sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+  }
+  sub {
+    bottom: -0.25em;
+  }
+  sup {
+    top: -0.5em;
+  }
+  table {
+    text-indent: 0;
+    border-color: inherit;
+    border-collapse: collapse;
+  }
+  :-moz-focusring:where(:not(iframe)) {
+    outline: auto;
+  }
+  progress {
+    vertical-align: baseline;
+  }
+  summary {
+    display: list-item;
+  }
+  ol, ul, menu {
+    list-style: none;
+  }
+  img, svg, video, canvas, audio, iframe, embed, object {
+    display: block;
+    vertical-align: middle;
+  }
+  img, video {
+    max-width: 100%;
+    height: auto;
+  }
+  button, input, select, optgroup, textarea, ::file-selector-button {
+    font: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    border-radius: 0;
+    background-color: transparent;
+    opacity: 1;
+  }
+  :where(select:is([multiple], [size])) optgroup {
+    font-weight: bolder;
+  }
+  :where(select:is([multiple], [size])) optgroup option {
+    padding-inline-start: 20px;
+  }
+  ::file-selector-button {
+    margin-inline-end: 4px;
+  }
+  ::placeholder {
+    opacity: 1;
+  }
+  @supports (not (-webkit-appearance: -apple-pay-button))  or (contain-intrinsic-size: 1px) {
+    ::placeholder {
+      color: currentcolor;
+      @supports (color: color-mix(in lab, red, red)) {
+        color: color-mix(in oklab, currentcolor 50%, transparent);
+      }
+    }
+  }
+  textarea {
+    resize: vertical;
+  }
+  ::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
+  ::-webkit-date-and-time-value {
+    min-height: 1lh;
+    text-align: inherit;
+  }
+  ::-webkit-datetime-edit {
+    display: inline-flex;
+  }
+  ::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
+  }
+  ::-webkit-datetime-edit, ::-webkit-datetime-edit-year-field, ::-webkit-datetime-edit-month-field, ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-hour-field, ::-webkit-datetime-edit-minute-field, ::-webkit-datetime-edit-second-field, ::-webkit-datetime-edit-millisecond-field, ::-webkit-datetime-edit-meridiem-field {
+    padding-block: 0;
+  }
+  ::-webkit-calendar-picker-indicator {
+    line-height: 1;
+  }
+  :-moz-ui-invalid {
+    box-shadow: none;
+  }
+  button, input:where([type="button"], [type="reset"], [type="submit"]), ::file-selector-button {
+    appearance: button;
+  }
+  ::-webkit-inner-spin-button, ::-webkit-outer-spin-button {
+    height: auto;
+  }
+  [hidden]:where(:not([hidden="until-found"])) {
+    display: none !important;
+  }
+}
+@layer utilities {
+  .absolute {
+    position: absolute;
+  }
+  .fixed {
+    position: fixed;
+  }
+  .relative {
+    position: relative;
+  }
+  .sticky {
+    position: sticky;
+  }
+  .inset-0 {
+    inset: 0px;
+  }
+  .inset-4 {
+    inset: calc(var(--spacing) * 4);
+  }
+  .top-0 {
+    top: 0px;
+  }
+  .top-20 {
+    top: calc(var(--spacing) * 20);
+  }
+  .left-0 {
+    left: 0px;
+  }
+  .left-1\/2 {
+    left: calc(1 / 2 * 100%);
+  }
+  .z-20 {
+    z-index: 20;
+  }
+  .z-50 {
+    z-index: 50;
+  }
+  .mt-0\.5 {
+    margin-top: calc(var(--spacing) * 0.5);
+  }
+  .mt-1 {
+    margin-top: var(--spacing);
+  }
+  .mt-2 {
+    margin-top: calc(var(--spacing) * 2);
+  }
+  .mt-3 {
+    margin-top: calc(var(--spacing) * 3);
+  }
+  .mb-1 {
+    margin-bottom: var(--spacing);
+  }
+  .mb-3 {
+    margin-bottom: calc(var(--spacing) * 3);
+  }
+  .mb-4 {
+    margin-bottom: calc(var(--spacing) * 4);
+  }
+  .mb-5 {
+    margin-bottom: calc(var(--spacing) * 5);
+  }
+  .mb-6 {
+    margin-bottom: calc(var(--spacing) * 6);
+  }
+  .ml-0\.5 {
+    margin-left: calc(var(--spacing) * 0.5);
+  }
+  .ml-2 {
+    margin-left: calc(var(--spacing) * 2);
+  }
+  .flex {
+    display: flex;
+  }
+  .grid {
+    display: grid;
+  }
+  .hidden {
+    display: none;
+  }
+  .inline-flex {
+    display: inline-flex;
+  }
+  .h-1 {
+    height: var(--spacing);
+  }
+  .h-1\.5 {
+    height: calc(var(--spacing) * 1.5);
+  }
+  .h-2 {
+    height: calc(var(--spacing) * 2);
+  }
+  .h-2\.5 {
+    height: calc(var(--spacing) * 2.5);
+  }
+  .h-3 {
+    height: calc(var(--spacing) * 3);
+  }
+  .h-3\.5 {
+    height: calc(var(--spacing) * 3.5);
+  }
+  .h-4 {
+    height: calc(var(--spacing) * 4);
+  }
+  .h-5 {
+    height: calc(var(--spacing) * 5);
+  }
+  .h-8 {
+    height: calc(var(--spacing) * 8);
+  }
+  .h-10 {
+    height: calc(var(--spacing) * 10);
+  }
+  .h-16 {
+    height: calc(var(--spacing) * 16);
+  }
+  .h-72 {
+    height: calc(var(--spacing) * 72);
+  }
+  .h-full {
+    height: 100%;
+  }
+  .max-h-56 {
+    max-height: calc(var(--spacing) * 56);
+  }
+  .max-h-\[90vh\] {
+    max-height: 90vh;
+  }
+  .min-h-\[44px\] {
+    min-height: 44px;
+  }
+  .min-h-\[48px\] {
+    min-height: 48px;
+  }
+  .min-h-\[52px\] {
+    min-height: 52px;
+  }
+  .min-h-screen {
+    min-height: 100vh;
+  }
+  .w-2 {
+    width: calc(var(--spacing) * 2);
+  }
+  .w-2\.5 {
+    width: calc(var(--spacing) * 2.5);
+  }
+  .w-3 {
+    width: calc(var(--spacing) * 3);
+  }
+  .w-3\.5 {
+    width: calc(var(--spacing) * 3.5);
+  }
+  .w-4 {
+    width: calc(var(--spacing) * 4);
+  }
+  .w-5 {
+    width: calc(var(--spacing) * 5);
+  }
+  .w-8 {
+    width: calc(var(--spacing) * 8);
+  }
+  .w-10 {
+    width: calc(var(--spacing) * 10);
+  }
+  .w-11\/12 {
+    width: calc(11 / 12 * 100%);
+  }
+  .w-16 {
+    width: calc(var(--spacing) * 16);
+  }
+  .w-20 {
+    width: calc(var(--spacing) * 20);
+  }
+  .w-56 {
+    width: calc(var(--spacing) * 56);
+  }
+  .w-72 {
+    width: calc(var(--spacing) * 72);
+  }
+  .w-full {
+    width: 100%;
+  }
+  .w-px {
+    width: 1px;
+  }
+  .max-w-md {
+    max-width: var(--container-md);
+  }
+  .max-w-sm {
+    max-width: var(--container-sm);
+  }
+  .max-w-xl {
+    max-width: var(--container-xl);
+  }
+  .min-w-0 {
+    min-width: 0px;
+  }
+  .flex-1 {
+    flex: 1;
+  }
+  .shrink-0 {
+    flex-shrink: 0;
+  }
+  .-translate-x-1\/2 {
+    --tw-translate-x: calc(calc(1 / 2 * 100%) * -1);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+  .scale-105 {
+    --tw-scale-x: 105%;
+    --tw-scale-y: 105%;
+    --tw-scale-z: 105%;
+    scale: var(--tw-scale-x) var(--tw-scale-y);
+  }
+  .-rotate-90 {
+    rotate: calc(90deg * -1);
+  }
+  .transform {
+    transform: var(--tw-rotate-x, ) var(--tw-rotate-y, ) var(--tw-rotate-z, ) var(--tw-skew-x, ) var(--tw-skew-y, );
+  }
+  .animate-bounce {
+    animation: var(--animate-bounce);
+  }
+  .animate-pulse {
+    animation: var(--animate-pulse);
+  }
+  .cursor-not-allowed {
+    cursor: not-allowed;
+  }
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .flex-col {
+    flex-direction: column;
+  }
+  .flex-wrap {
+    flex-wrap: wrap;
+  }
+  .items-center {
+    align-items: center;
+  }
+  .items-start {
+    align-items: flex-start;
+  }
+  .justify-around {
+    justify-content: space-around;
+  }
+  .justify-between {
+    justify-content: space-between;
+  }
+  .justify-center {
+    justify-content: center;
+  }
+  .justify-end {
+    justify-content: flex-end;
+  }
+  .justify-start {
+    justify-content: flex-start;
+  }
+  .gap-1 {
+    gap: var(--spacing);
+  }
+  .gap-1\.5 {
+    gap: calc(var(--spacing) * 1.5);
+  }
+  .gap-2 {
+    gap: calc(var(--spacing) * 2);
+  }
+  .gap-2\.5 {
+    gap: calc(var(--spacing) * 2.5);
+  }
+  .gap-3 {
+    gap: calc(var(--spacing) * 3);
+  }
+  .gap-4 {
+    gap: calc(var(--spacing) * 4);
+  }
+  .gap-6 {
+    gap: calc(var(--spacing) * 6);
+  }
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .overflow-hidden {
+    overflow: hidden;
+  }
+  .overflow-y-auto {
+    overflow-y: auto;
+  }
+  .rounded {
+    border-radius: 0.25rem;
+  }
+  .rounded-2xl {
+    border-radius: var(--radius-2xl);
+  }
+  .rounded-3xl {
+    border-radius: var(--radius-3xl);
+  }
+  .rounded-full {
+    border-radius: calc(infinity * 1px);
+  }
+  .rounded-lg {
+    border-radius: var(--radius-lg);
+  }
+  .rounded-xl {
+    border-radius: var(--radius-xl);
+  }
+  .border {
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+  }
+  .border-t {
+    border-top-style: var(--tw-border-style);
+    border-top-width: 1px;
+  }
+  .border-b {
+    border-bottom-style: var(--tw-border-style);
+    border-bottom-width: 1px;
+  }
+  .border-\[\#6C9FE8\] {
+    border-color: #6C9FE8;
+  }
+  .border-\[\#6C9FE8\]\/30 {
+    border-color: color-mix(in oklab, #6C9FE8 30%, transparent);
+  }
+  .border-\[\#6C9FE8\]\/40 {
+    border-color: color-mix(in oklab, #6C9FE8 40%, transparent);
+  }
+  .border-\[\#DCEEFF\] {
+    border-color: #DCEEFF;
+  }
+  .border-\[\#DCEEFF\]\/40 {
+    border-color: color-mix(in oklab, #DCEEFF 40%, transparent);
+  }
+  .border-\[\#DCEEFF\]\/60 {
+    border-color: color-mix(in oklab, #DCEEFF 60%, transparent);
+  }
+  .border-\[\#DCEEFF\]\/70 {
+    border-color: color-mix(in oklab, #DCEEFF 70%, transparent);
+  }
+  .border-\[\#DCEEFF\]\/80 {
+    border-color: color-mix(in oklab, #DCEEFF 80%, transparent);
+  }
+  .border-amber-200 {
+    border-color: var(--color-amber-200);
+  }
+  .bg-\[\#2D6A4F\] {
+    background-color: #2D6A4F;
+  }
+  .bg-\[\#6C9FE8\] {
+    background-color: #6C9FE8;
+  }
+  .bg-\[\#DCEEFF\] {
+    background-color: #DCEEFF;
+  }
+  .bg-\[\#DCEEFF\]\/30 {
+    background-color: color-mix(in oklab, #DCEEFF 30%, transparent);
+  }
+  .bg-\[\#DCEEFF\]\/40 {
+    background-color: color-mix(in oklab, #DCEEFF 40%, transparent);
+  }
+  .bg-\[\#DCEEFF\]\/50 {
+    background-color: color-mix(in oklab, #DCEEFF 50%, transparent);
+  }
+  .bg-\[\#DCEEFF\]\/70 {
+    background-color: color-mix(in oklab, #DCEEFF 70%, transparent);
+  }
+  .bg-\[\#EBF5EE\] {
+    background-color: #EBF5EE;
+  }
+  .bg-\[\#F4F8FD\] {
+    background-color: #F4F8FD;
+  }
+  .bg-amber-50 {
+    background-color: var(--color-amber-50);
+  }
+  .bg-amber-100 {
+    background-color: var(--color-amber-100);
+  }
+  .bg-amber-400 {
+    background-color: var(--color-amber-400);
+  }
+  .bg-amber-500 {
+    background-color: var(--color-amber-500);
+  }
+  .bg-black\/30 {
+    background-color: color-mix(in srgb, #000 30%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-black) 30%, transparent);
+    }
+  }
+  .bg-rose-400 {
+    background-color: var(--color-rose-400);
+  }
+  .bg-rose-500 {
+    background-color: var(--color-rose-500);
+  }
+  .bg-slate-100 {
+    background-color: var(--color-slate-100);
+  }
+  .bg-slate-200 {
+    background-color: var(--color-slate-200);
+  }
+  .bg-white {
+    background-color: var(--color-white);
+  }
+  .bg-white\/70 {
+    background-color: color-mix(in srgb, #fff 70%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-white) 70%, transparent);
+    }
+  }
+  .bg-white\/80 {
+    background-color: color-mix(in srgb, #fff 80%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-white) 80%, transparent);
+    }
+  }
+  .bg-white\/95 {
+    background-color: color-mix(in srgb, #fff 95%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-white) 95%, transparent);
+    }
+  }
+  .fill-current {
+    fill: currentcolor;
+  }
+  .p-1\.5 {
+    padding: calc(var(--spacing) * 1.5);
+  }
+  .p-2 {
+    padding: calc(var(--spacing) * 2);
+  }
+  .p-3 {
+    padding: calc(var(--spacing) * 3);
+  }
+  .p-3\.5 {
+    padding: calc(var(--spacing) * 3.5);
+  }
+  .p-4 {
+    padding: calc(var(--spacing) * 4);
+  }
+  .p-5 {
+    padding: calc(var(--spacing) * 5);
+  }
+  .p-6 {
+    padding: calc(var(--spacing) * 6);
+  }
+  .px-1 {
+    padding-inline: var(--spacing);
+  }
+  .px-2 {
+    padding-inline: calc(var(--spacing) * 2);
+  }
+  .px-2\.5 {
+    padding-inline: calc(var(--spacing) * 2.5);
+  }
+  .px-3 {
+    padding-inline: calc(var(--spacing) * 3);
+  }
+  .px-3\.5 {
+    padding-inline: calc(var(--spacing) * 3.5);
+  }
+  .px-4 {
+    padding-inline: calc(var(--spacing) * 4);
+  }
+  .px-5 {
+    padding-inline: calc(var(--spacing) * 5);
+  }
+  .px-7 {
+    padding-inline: calc(var(--spacing) * 7);
+  }
+  .px-8 {
+    padding-inline: calc(var(--spacing) * 8);
+  }
+  .py-0\.5 {
+    padding-block: calc(var(--spacing) * 0.5);
+  }
+  .py-1 {
+    padding-block: var(--spacing);
+  }
+  .py-1\.5 {
+    padding-block: calc(var(--spacing) * 1.5);
+  }
+  .py-2 {
+    padding-block: calc(var(--spacing) * 2);
+  }
+  .py-2\.5 {
+    padding-block: calc(var(--spacing) * 2.5);
+  }
+  .py-4 {
+    padding-block: calc(var(--spacing) * 4);
+  }
+  .pt-3 {
+    padding-top: calc(var(--spacing) * 3);
+  }
+  .pr-1 {
+    padding-right: var(--spacing);
+  }
+  .text-center {
+    text-align: center;
+  }
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+  .text-5xl {
+    font-size: var(--text-5xl);
+    line-height: var(--tw-leading, var(--text-5xl--line-height));
+  }
+  .text-base {
+    font-size: var(--text-base);
+    line-height: var(--tw-leading, var(--text-base--line-height));
+  }
+  .text-lg {
+    font-size: var(--text-lg);
+    line-height: var(--tw-leading, var(--text-lg--line-height));
+  }
+  .text-sm {
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
+  }
+  .text-xl {
+    font-size: var(--text-xl);
+    line-height: var(--tw-leading, var(--text-xl--line-height));
+  }
+  .text-xs {
+    font-size: var(--text-xs);
+    line-height: var(--tw-leading, var(--text-xs--line-height));
+  }
+  .text-\[10px\] {
+    font-size: 10px;
+  }
+  .text-\[11px\] {
+    font-size: 11px;
+  }
+  .leading-relaxed {
+    --tw-leading: var(--leading-relaxed);
+    line-height: var(--leading-relaxed);
+  }
+  .font-bold {
+    --tw-font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-bold);
+  }
+  .font-medium {
+    --tw-font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-medium);
+  }
+  .font-normal {
+    --tw-font-weight: var(--font-weight-normal);
+    font-weight: var(--font-weight-normal);
+  }
+  .font-semibold {
+    --tw-font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-semibold);
+  }
+  .tracking-tight {
+    --tw-tracking: var(--tracking-tight);
+    letter-spacing: var(--tracking-tight);
+  }
+  .tracking-wide {
+    --tw-tracking: var(--tracking-wide);
+    letter-spacing: var(--tracking-wide);
+  }
+  .whitespace-nowrap {
+    white-space: nowrap;
+  }
+  .text-\[\#2D6A4F\] {
+    color: #2D6A4F;
+  }
+  .text-\[\#6C9FE8\] {
+    color: #6C9FE8;
+  }
+  .text-\[\#26364A\] {
+    color: #26364A;
+  }
+  .text-\[\#26364A\]\/40 {
+    color: color-mix(in oklab, #26364A 40%, transparent);
+  }
+  .text-\[\#26364A\]\/50 {
+    color: color-mix(in oklab, #26364A 50%, transparent);
+  }
+  .text-\[\#26364A\]\/60 {
+    color: color-mix(in oklab, #26364A 60%, transparent);
+  }
+  .text-\[\#26364A\]\/70 {
+    color: color-mix(in oklab, #26364A 70%, transparent);
+  }
+  .text-\[\#26364A\]\/80 {
+    color: color-mix(in oklab, #26364A 80%, transparent);
+  }
+  .text-amber-600 {
+    color: var(--color-amber-600);
+  }
+  .text-amber-700 {
+    color: var(--color-amber-700);
+  }
+  .text-amber-800 {
+    color: var(--color-amber-800);
+  }
+  .text-rose-500 {
+    color: var(--color-rose-500);
+  }
+  .text-slate-400 {
+    color: var(--color-slate-400);
+  }
+  .text-slate-500 {
+    color: var(--color-slate-500);
+  }
+  .text-slate-700 {
+    color: var(--color-slate-700);
+  }
+  .text-white {
+    color: var(--color-white);
+  }
+  .tabular-nums {
+    --tw-numeric-spacing: tabular-nums;
+    font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+  }
+  .antialiased {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  .opacity-40 {
+    opacity: 40%;
+  }
+  .shadow-2xl {
+    --tw-shadow: 0 25px 50px -12px var(--tw-shadow-color, rgb(0 0 0 / 0.25));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-inner {
+    --tw-shadow: inset 0 2px 4px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.05));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-lg {
+    --tw-shadow: 0 10px 15px -3px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 4px 6px -4px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-md {
+    --tw-shadow: 0 4px 6px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 2px 4px -2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-sm {
+    --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 1px 2px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-xl {
+    --tw-shadow: 0 20px 25px -5px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 8px 10px -6px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-\[\#6C9FE8\]\/10 {
+    --tw-shadow-color: color-mix(in srgb, #6C9FE8 10%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, #6C9FE8 10%, transparent) var(--tw-shadow-alpha), transparent);
+    }
+  }
+  .shadow-\[\#6C9FE8\]\/15 {
+    --tw-shadow-color: color-mix(in srgb, #6C9FE8 15%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, #6C9FE8 15%, transparent) var(--tw-shadow-alpha), transparent);
+    }
+  }
+  .shadow-\[\#6C9FE8\]\/25 {
+    --tw-shadow-color: color-mix(in srgb, #6C9FE8 25%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, #6C9FE8 25%, transparent) var(--tw-shadow-alpha), transparent);
+    }
+  }
+  .drop-shadow-sm {
+    --tw-drop-shadow-size: drop-shadow(0 1px 2px var(--tw-drop-shadow-color, rgb(0 0 0 / 0.15)));
+    --tw-drop-shadow: drop-shadow(var(--drop-shadow-sm));
+    filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
+  }
+  .backdrop-blur-md {
+    --tw-backdrop-blur: blur(var(--blur-md));
+    -webkit-backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
+    backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
+  }
+  .backdrop-blur-sm {
+    --tw-backdrop-blur: blur(var(--blur-sm));
+    -webkit-backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
+    backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
+  }
+  .transition-all {
+    transition-property: all;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-colors {
+    transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .duration-75 {
+    --tw-duration: 75ms;
+    transition-duration: 75ms;
+  }
+  .duration-150 {
+    --tw-duration: 150ms;
+    transition-duration: 150ms;
+  }
+  .duration-200 {
+    --tw-duration: 200ms;
+    transition-duration: 200ms;
+  }
+  .duration-300 {
+    --tw-duration: 300ms;
+    transition-duration: 300ms;
+  }
+  .ease-linear {
+    --tw-ease: linear;
+    transition-timing-function: linear;
+  }
+  .select-none {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .selection\:bg-\[\#DCEEFF\] ::selection {
+    background-color: #DCEEFF;
+  }
+  .selection\:bg-\[\#DCEEFF\]::selection {
+    background-color: #DCEEFF;
+  }
+  .selection\:text-\[\#26364A\] ::selection {
+    color: #26364A;
+  }
+  .selection\:text-\[\#26364A\]::selection {
+    color: #26364A;
+  }
+  @media (hover: hover) {
+    .hover\:bg-\[\#6C9FE8\]:hover {
+      background-color: #6C9FE8;
+    }
+    .hover\:bg-\[\#588ce0\]:hover {
+      background-color: #588ce0;
+    }
+    .hover\:bg-\[\#DCEEFF\]\/30:hover {
+      background-color: color-mix(in oklab, #DCEEFF 30%, transparent);
+    }
+    .hover\:bg-\[\#DCEEFF\]\/40:hover {
+      background-color: color-mix(in oklab, #DCEEFF 40%, transparent);
+    }
+    .hover\:bg-\[\#DCEEFF\]\/50:hover {
+      background-color: color-mix(in oklab, #DCEEFF 50%, transparent);
+    }
+    .hover\:bg-\[\#cde4fc\]:hover {
+      background-color: #cde4fc;
+    }
+    .hover\:bg-rose-50:hover {
+      background-color: var(--color-rose-50);
+    }
+    .hover\:bg-rose-600:hover {
+      background-color: var(--color-rose-600);
+    }
+    .hover\:bg-slate-100:hover {
+      background-color: var(--color-slate-100);
+    }
+    .hover\:bg-slate-300:hover {
+      background-color: var(--color-slate-300);
+    }
+    .hover\:bg-white:hover {
+      background-color: var(--color-white);
+    }
+    .hover\:text-\[\#6C9FE8\]:hover {
+      color: #6C9FE8;
+    }
+    .hover\:text-\[\#588ce0\]:hover {
+      color: #588ce0;
+    }
+    .hover\:text-rose-500:hover {
+      color: var(--color-rose-500);
+    }
+    .hover\:text-slate-700:hover {
+      color: var(--color-slate-700);
+    }
+    .hover\:text-white:hover {
+      color: var(--color-white);
+    }
+  }
+  .focus\:ring-2:focus {
+    --tw-ring-shadow: var(--tw-ring-inset, ) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .focus\:ring-\[\#6C9FE8\]:focus {
+    --tw-ring-color: #6C9FE8;
+  }
+  .focus\:outline-none:focus {
+    --tw-outline-style: none;
+    outline-style: none;
+  }
+  .active\:scale-95:active {
+    --tw-scale-x: 95%;
+    --tw-scale-y: 95%;
+    --tw-scale-z: 95%;
+    scale: var(--tw-scale-x) var(--tw-scale-y);
+  }
+  @media (width >= 40rem) {
+    .sm\:inline {
+      display: inline;
+    }
+    .sm\:h-80 {
+      height: calc(var(--spacing) * 80);
+    }
+    .sm\:w-80 {
+      width: calc(var(--spacing) * 80);
+    }
+    .sm\:gap-4 {
+      gap: calc(var(--spacing) * 4);
+    }
+    .sm\:p-4 {
+      padding: calc(var(--spacing) * 4);
+    }
+    .sm\:p-6 {
+      padding: calc(var(--spacing) * 6);
+    }
+    .sm\:p-7 {
+      padding: calc(var(--spacing) * 7);
+    }
+    .sm\:px-6 {
+      padding-inline: calc(var(--spacing) * 6);
+    }
+    .sm\:py-6 {
+      padding-block: calc(var(--spacing) * 6);
+    }
+    .sm\:text-2xl {
+      font-size: var(--text-2xl);
+      line-height: var(--tw-leading, var(--text-2xl--line-height));
+    }
+    .sm\:text-6xl {
+      font-size: var(--text-6xl);
+      line-height: var(--tw-leading, var(--text-6xl--line-height));
+    }
+    .sm\:text-base {
+      font-size: var(--text-base);
+      line-height: var(--tw-leading, var(--text-base--line-height));
+    }
+    .sm\:text-lg {
+      font-size: var(--text-lg);
+      line-height: var(--tw-leading, var(--text-lg--line-height));
+    }
+    .sm\:text-sm {
+      font-size: var(--text-sm);
+      line-height: var(--tw-leading, var(--text-sm--line-height));
+    }
+    .sm\:text-xl {
+      font-size: var(--text-xl);
+      line-height: var(--tw-leading, var(--text-xl--line-height));
+    }
+  }
+}
+@property --tw-translate-x {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-translate-y {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-translate-z {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-scale-x {
+  syntax: "*";
+  inherits: false;
+  initial-value: 1;
+}
+@property --tw-scale-y {
+  syntax: "*";
+  inherits: false;
+  initial-value: 1;
+}
+@property --tw-scale-z {
+  syntax: "*";
+  inherits: false;
+  initial-value: 1;
+}
+@property --tw-rotate-x {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-rotate-y {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-rotate-z {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-skew-x {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-skew-y {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-border-style {
+  syntax: "*";
+  inherits: false;
+  initial-value: solid;
+}
+@property --tw-leading {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-font-weight {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-tracking {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-ordinal {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-slashed-zero {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-numeric-figure {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-numeric-spacing {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-numeric-fraction {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-shadow-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-shadow-alpha {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+@property --tw-inset-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-inset-shadow-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-inset-shadow-alpha {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+@property --tw-ring-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-ring-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-inset-ring-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-inset-ring-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-ring-inset {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-ring-offset-width {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --tw-ring-offset-color {
+  syntax: "*";
+  inherits: false;
+  initial-value: #fff;
+}
+@property --tw-ring-offset-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-blur {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-brightness {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-contrast {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-grayscale {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-hue-rotate {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-invert {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-opacity {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-saturate {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-sepia {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-drop-shadow {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-drop-shadow-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-drop-shadow-alpha {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+@property --tw-drop-shadow-size {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-blur {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-brightness {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-contrast {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-grayscale {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-hue-rotate {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-invert {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-opacity {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-saturate {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-sepia {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-duration {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-ease {
+  syntax: "*";
+  inherits: false;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: none;
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+@layer properties {
+  @supports ((-webkit-hyphens: none) and (not (margin-trim: block))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
+    *, ::before, ::after, ::backdrop {
+      --tw-translate-x: 0;
+      --tw-translate-y: 0;
+      --tw-translate-z: 0;
+      --tw-scale-x: 1;
+      --tw-scale-y: 1;
+      --tw-scale-z: 1;
+      --tw-rotate-x: initial;
+      --tw-rotate-y: initial;
+      --tw-rotate-z: initial;
+      --tw-skew-x: initial;
+      --tw-skew-y: initial;
+      --tw-border-style: solid;
+      --tw-leading: initial;
+      --tw-font-weight: initial;
+      --tw-tracking: initial;
+      --tw-ordinal: initial;
+      --tw-slashed-zero: initial;
+      --tw-numeric-figure: initial;
+      --tw-numeric-spacing: initial;
+      --tw-numeric-fraction: initial;
+      --tw-shadow: 0 0 #0000;
+      --tw-shadow-color: initial;
+      --tw-shadow-alpha: 100%;
+      --tw-inset-shadow: 0 0 #0000;
+      --tw-inset-shadow-color: initial;
+      --tw-inset-shadow-alpha: 100%;
+      --tw-ring-color: initial;
+      --tw-ring-shadow: 0 0 #0000;
+      --tw-inset-ring-color: initial;
+      --tw-inset-ring-shadow: 0 0 #0000;
+      --tw-ring-inset: initial;
+      --tw-ring-offset-width: 0px;
+      --tw-ring-offset-color: #fff;
+      --tw-ring-offset-shadow: 0 0 #0000;
+      --tw-blur: initial;
+      --tw-brightness: initial;
+      --tw-contrast: initial;
+      --tw-grayscale: initial;
+      --tw-hue-rotate: initial;
+      --tw-invert: initial;
+      --tw-opacity: initial;
+      --tw-saturate: initial;
+      --tw-sepia: initial;
+      --tw-drop-shadow: initial;
+      --tw-drop-shadow-color: initial;
+      --tw-drop-shadow-alpha: 100%;
+      --tw-drop-shadow-size: initial;
+      --tw-backdrop-blur: initial;
+      --tw-backdrop-brightness: initial;
+      --tw-backdrop-contrast: initial;
+      --tw-backdrop-grayscale: initial;
+      --tw-backdrop-hue-rotate: initial;
+      --tw-backdrop-invert: initial;
+      --tw-backdrop-opacity: initial;
+      --tw-backdrop-saturate: initial;
+      --tw-backdrop-sepia: initial;
+      --tw-duration: initial;
+      --tw-ease: initial;
+    }
+  }
+}
+
+
+@layer base {
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", "Noto Sans KR", "Segoe UI", Roboto, sans-serif;
+    background-color: #F4F8FD;
+    color: #26364A;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@keyframes gentleShake {
+  0%, 100% { transform: translate(-50%, 0); }
+  20%, 60% { transform: translate(calc(-50% - 4px), 0); }
+  40%, 80% { transform: translate(calc(-50% + 4px), 0); }
+}
+
+.animate-gentle-shake {
+  animation: gentleShake 0.4s ease-in-out;
+}
+
+@keyframes softPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.02); opacity: 0.94; }
+}
+
+.animate-soft-pulse {
+  animation: softPulse 2.5s ease-in-out infinite;
+}
+  </style>
+<script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
+<body class="min-h-screen bg-[#F4F8FD] text-[#26364A] flex flex-col items-center justify-between antialiased selection:bg-[#DCEEFF] selection:text-[#26364A]">
+
+  <!-- Shake Alert Banner -->
+  <div id="shakeAlert" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-md hidden animate-gentle-shake" role="alert">
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl shadow-[#6C9FE8]/15 border border-[#6C9FE8]/30 overflow-hidden relative">
+      <div id="alertProgressBar" class="absolute top-0 left-0 h-1 bg-[#6C9FE8] w-full transition-all duration-75"></div>
+      <div class="flex items-start gap-3 mt-1">
+        <div class="w-10 h-10 rounded-xl bg-[#DCEEFF] flex items-center justify-center shrink-0 text-[#6C9FE8]">
+          <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
+            <path d="M12 18h.01"/>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between gap-2">
+            <h4 class="font-semibold text-sm sm:text-base text-[#26364A]">움직임이 감지되었습니다!</h4>
+            <span id="alertShakeCountBadge" class="text-[11px] font-medium text-[#6C9FE8] bg-[#DCEEFF]/50 px-2 py-0.5 rounded-full whitespace-nowrap">감지 1회</span>
+          </div>
+          <p class="text-xs sm:text-sm text-[#26364A]/80 mt-1 leading-relaxed">
+            집중이 흐트러졌어요! 다시 공부에 집중해 볼까요?
+          </p>
+          <div class="mt-3 flex justify-end">
+            <button onclick="dismissShakeAlert()" type="button" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#6C9FE8] hover:bg-[#588ce0] text-white text-xs font-semibold shadow-sm transition-all active:scale-95">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+              <span>네, 다시 집중할게요</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="w-full flex items-center justify-between py-4 px-4 sm:px-6 border-b border-[#DCEEFF]/60 bg-white/70 backdrop-blur-md sticky top-0 z-20">
+    <div class="flex flex-col">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#6C9FE8]"></span>
+        <span class="font-bold tracking-tight text-xl sm:text-2xl text-[#26364A]">FOCUS ON</span>
+      </div>
+      <p class="text-xs text-[#26364A]/70 font-medium">나에게 집중하는 시간</p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <!-- Sensor Badge -->
+      <button id="sensorBadge" type="button" onclick="handleSensorBadgeClick()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-[#26364A]/70 transition-colors" title="센서 상태 확인">
+        <svg id="sensorPhoneIcon" class="w-3.5 h-3.5 text-[#6C9FE8] hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+        <svg id="sensorLaptopIcon" class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>
+        <span id="sensorBadgeText" class="hidden sm:inline">센서 확인</span>
+      </button>
+
+      <!-- Sound Toggle -->
+      <button id="soundToggleBtn" onclick="toggleSound()" type="button" class="p-2 rounded-xl text-[#26364A]/80 hover:bg-[#DCEEFF]/50 transition-colors" title="알림 소리 켜기/끄기" aria-label="알림 소리 토글">
+        <svg id="soundOnIcon" class="w-4 h-4 text-[#6C9FE8]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        <svg id="soundOffIcon" class="w-4 h-4 text-slate-400 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" x2="17" y1="9" y2="15"/><line x1="17" x2="23" y1="9" y2="15"/></svg>
+      </button>
+
+      <!-- Info Button -->
+      <button onclick="openInfoModal()" type="button" class="p-2 rounded-xl text-[#26364A]/80 hover:bg-[#DCEEFF]/50 transition-colors" title="사용 방법 및 센서 안내" aria-label="사용 방법 안내">
+        <svg class="w-4 h-4 text-[#6C9FE8]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="w-full max-w-xl flex-1 flex flex-col items-center justify-start px-4 py-4 sm:py-6 gap-6">
+
+    <!-- PC / Unsupported Notice Banner -->
+    <div id="pcBanner" class="w-full flex items-center justify-between py-2 px-3.5 rounded-2xl bg-[#DCEEFF]/50 border border-[#DCEEFF] text-xs text-[#26364A] hidden">
+      <span class="flex items-center gap-1.5 font-medium">
+        <span class="w-2 h-2 rounded-full bg-[#6C9FE8] shrink-0"></span>
+        <span id="pcBannerText">PC 환경: 타이머는 정상 작동하며, 아래 버튼으로 흔들림 감지를 시험해볼 수 있습니다.</span>
+      </span>
+      <button onclick="triggerMockShake()" type="button" class="ml-2 px-2.5 py-1 rounded-xl bg-white text-[#6C9FE8] border border-[#6C9FE8]/40 hover:bg-[#6C9FE8] hover:text-white transition-colors shrink-0 font-semibold text-[11px] flex items-center gap-1">
+        <span>움직임 테스트</span>
+      </button>
+    </div>
+
+    <!-- Sensor Denied Banner -->
+    <div id="deniedBanner" class="w-full flex items-center gap-2 py-2 px-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-800 hidden">
+      <svg class="w-4 h-4 shrink-0 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+      <span>센서 권한이 허용되지 않았습니다. 타이머는 계속 작동하며 브라우저 설정에서 센서 권한을 허용할 수 있습니다.</span>
+    </div>
+
+    <!-- Duration Presets -->
+    <div class="w-full flex flex-col items-center gap-2.5">
+      <div class="text-xs text-[#26364A]/60 font-medium">공부 시간 설정</div>
+      <div class="flex flex-wrap items-center justify-center gap-2" id="presetButtons">
+        <button type="button" onclick="selectDuration(5)" class="preset-btn min-h-[44px] px-4 py-2 rounded-2xl text-sm font-semibold border border-[#DCEEFF] bg-white text-[#26364A] hover:bg-[#DCEEFF]/50 transition-all duration-200 select-none active:scale-95" data-mins="5">5분</button>
+        <button type="button" onclick="selectDuration(15)" class="preset-btn min-h-[44px] px-4 py-2 rounded-2xl text-sm font-semibold border border-[#DCEEFF] bg-white text-[#26364A] hover:bg-[#DCEEFF]/50 transition-all duration-200 select-none active:scale-95" data-mins="15">15분</button>
+        <button type="button" onclick="selectDuration(25)" class="preset-btn min-h-[44px] px-4 py-2 rounded-2xl text-sm font-semibold bg-[#6C9FE8] text-white shadow-md shadow-[#6C9FE8]/25 scale-105 transition-all duration-200 select-none" data-mins="25">25분</button>
+        <button type="button" onclick="selectDuration(50)" class="preset-btn min-h-[44px] px-4 py-2 rounded-2xl text-sm font-semibold border border-[#DCEEFF] bg-white text-[#26364A] hover:bg-[#DCEEFF]/50 transition-all duration-200 select-none active:scale-95" data-mins="50">50분</button>
+        <button type="button" onclick="toggleCustomTime()" id="customTimeBtn" class="min-h-[44px] px-3.5 py-2 rounded-2xl text-sm font-semibold border border-[#DCEEFF] bg-white text-[#26364A] hover:bg-[#DCEEFF]/50 transition-all duration-200 flex items-center gap-1.5 active:scale-95" title="직접 시간 입력">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="4" x2="20" y1="21" y2="21"/><line x1="4" x2="20" y1="14" y2="14"/><line x1="4" x2="20" y1="7" y2="7"/><circle cx="14" cy="7" r="2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="21" r="2"/></svg>
+          <span id="customTimeLabel">직접 설정</span>
+        </button>
+      </div>
+
+      <!-- Custom time form -->
+      <form id="customTimeBox" onsubmit="event.preventDefault(); applyCustomTime();" class="hidden flex items-center gap-2 p-2 bg-white rounded-2xl border border-[#DCEEFF] shadow-sm mt-1">
+        <input type="number" id="customInput" min="1" max="180" value="25" placeholder="1~180" class="w-20 px-3 py-1.5 text-center text-sm font-semibold rounded-xl bg-[#F4F8FD] text-[#26364A] border border-[#DCEEFF] focus:outline-none focus:ring-2 focus:ring-[#6C9FE8]">
+        <span class="text-xs font-medium text-[#26364A]/70">분</span>
+        <button type="submit" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-[#6C9FE8] text-white hover:bg-[#588ce0] transition-colors">적용</button>
+      </form>
+    </div>
+
+    <!-- Circular Timer Display -->
+    <div class="relative flex flex-col items-center justify-center select-none py-2">
+      <div class="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center">
+        <div class="absolute inset-4 rounded-full bg-white/80 backdrop-blur-md shadow-lg shadow-[#6C9FE8]/10 border border-[#DCEEFF]/80"></div>
+        <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 300 300">
+          <circle cx="150" cy="150" r="130" stroke="#DCEEFF" stroke-width="10" fill="transparent" />
+          <circle id="progressCircle" cx="150" cy="150" r="130" stroke="#6C9FE8" stroke-width="10" stroke-linecap="round" fill="transparent" stroke-dasharray="816.81" stroke-dashoffset="816.81" class="transition-all duration-300 ease-linear" />
+        </svg>
+        <div class="absolute flex flex-col items-center justify-center text-center">
+          <div id="statusBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide mb-3 bg-[#DCEEFF] text-[#26364A] transition-colors">
+            <span id="statusDot" class="w-2 h-2 rounded-full bg-[#6C9FE8]"></span>
+            <span id="statusLabel">준비 완료</span>
+          </div>
+          <div id="timerText" class="text-5xl sm:text-6xl font-bold tracking-tight text-[#26364A] font-mono tabular-nums drop-shadow-sm">
+            25:00
+          </div>
+          <div class="mt-3 flex items-center gap-1.5 text-xs text-[#26364A]/70 font-medium bg-[#F4F8FD] px-3 py-1 rounded-xl border border-[#DCEEFF]">
+            <span>현재 감지 횟수:</span>
+            <span id="sessionShakeCount" class="font-bold tabular-nums text-[#26364A]">0회</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live stability indicator bar -->
+      <div id="stabilityBox" class="mt-3 w-56 flex flex-col items-center gap-1 hidden">
+        <div class="w-full flex items-center justify-between text-[11px] text-[#26364A]/60">
+          <span class="flex items-center gap-1">
+            <svg class="w-3 h-3 text-[#6C9FE8]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            기기 안정도
+          </span>
+          <span id="stabilityStatus" class="font-mono tabular-nums">안정적</span>
+        </div>
+        <div class="w-full h-1.5 bg-[#DCEEFF]/70 rounded-full overflow-hidden">
+          <div id="stabilityBar" class="h-full bg-[#6C9FE8] rounded-full transition-all duration-150" style="width: 6%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timer Controls -->
+    <div class="w-full flex items-center justify-center gap-3 py-2" id="controlsContainer">
+      <button id="startBtn" onclick="startTimer()" type="button" class="min-h-[52px] px-8 rounded-2xl bg-[#6C9FE8] hover:bg-[#588ce0] text-white text-base font-semibold shadow-lg shadow-[#6C9FE8]/25 flex items-center gap-2.5 transition-all duration-200 active:scale-95">
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span>시작하기</span>
+      </button>
+
+      <button id="pauseBtn" onclick="pauseTimer()" type="button" class="min-h-[52px] px-7 rounded-2xl bg-[#6C9FE8] hover:bg-[#588ce0] text-white text-base font-semibold shadow-lg shadow-[#6C9FE8]/25 flex items-center gap-2 transition-all duration-200 active:scale-95 hidden">
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        <span>일시정지</span>
+      </button>
+
+      <button id="resumeBtn" onclick="resumeTimer()" type="button" class="min-h-[52px] px-7 rounded-2xl bg-[#6C9FE8] hover:bg-[#588ce0] text-white text-base font-semibold shadow-lg shadow-[#6C9FE8]/25 flex items-center gap-2 transition-all duration-200 active:scale-95 hidden">
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span>다시 시작</span>
+      </button>
+
+      <button id="resetBtn" onclick="resetTimer()" type="button" class="min-h-[52px] px-5 rounded-2xl bg-white hover:bg-[#DCEEFF]/40 text-[#26364A] text-sm font-semibold border border-[#DCEEFF] shadow-sm flex items-center gap-1.5 transition-all duration-200 active:scale-95 hidden" title="현재 타이머를 초기화합니다 (공부 기록은 유지됩니다)">
+        <svg class="w-4 h-4 text-[#26364A]/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        <span id="resetBtnLabel">초기화</span>
+      </button>
+
+      <button id="newStudyBtn" onclick="resetTimer()" type="button" class="min-h-[52px] px-8 rounded-2xl bg-[#6C9FE8] hover:bg-[#588ce0] text-white text-base font-semibold shadow-lg shadow-[#6C9FE8]/25 flex items-center gap-2.5 transition-all duration-200 active:scale-95 hidden">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        <span>새 공부 시작하기</span>
+      </button>
+    </div>
+
+    <!-- Quick Shake trigger in running mode -->
+    <div id="quickTestContainer" class="w-full flex justify-center hidden">
+      <button onclick="triggerMockShake()" type="button" class="text-xs text-[#26364A]/50 hover:text-[#6C9FE8] flex items-center gap-1 transition-colors px-3 py-1 rounded-full hover:bg-white">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14.5 2v17.5c0 1.4-1.1 2.5-2.5 2.5s-2.5-1.1-2.5-2.5V2"/><path d="M8.5 2h7"/><path d="M14.5 16h-5"/></svg>
+        <span>시연용 흔들림 발생시키기</span>
+      </button>
+    </div>
+
+    <!-- Today's Focus Stats -->
+    <section class="w-full bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-[#DCEEFF]/80 flex flex-col gap-4 mt-2">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base sm:text-lg font-bold text-[#26364A]">오늘의 집중 기록</h3>
+          <p id="todayDateLabel" class="text-xs text-[#26364A]/60 font-medium"></p>
+        </div>
+        <button id="toggleHistoryBtn" type="button" onclick="toggleHistoryList()" class="hidden flex items-center gap-1 text-xs font-semibold text-[#6C9FE8] hover:text-[#588ce0] px-2.5 py-1.5 rounded-xl bg-[#DCEEFF]/40 transition-colors">
+          <span id="historyCountLabel">세션 내역 0개</span>
+          <svg id="historyChevronDown" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+          <svg id="historyChevronUp" class="w-3.5 h-3.5 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2.5 sm:gap-4">
+        <div class="flex flex-col p-3 sm:p-4 rounded-2xl bg-[#F4F8FD] border border-[#DCEEFF]/60">
+          <div class="flex items-center gap-1.5 text-xs text-[#26364A]/70 font-medium mb-1">
+            <svg class="w-3.5 h-3.5 text-[#6C9FE8]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>누적 시간</span>
+          </div>
+          <span id="todayTotalDuration" class="text-base sm:text-xl font-bold text-[#26364A] tracking-tight truncate">0분</span>
+        </div>
+        <div class="flex flex-col p-3 sm:p-4 rounded-2xl bg-[#F4F8FD] border border-[#DCEEFF]/60">
+          <div class="flex items-center gap-1.5 text-xs text-[#26364A]/70 font-medium mb-1">
+            <svg class="w-3.5 h-3.5 text-[#6C9FE8]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+            <span>흔들림 감지</span>
+          </div>
+          <span class="text-base sm:text-xl font-bold text-[#26364A] tracking-tight tabular-nums"><span id="todayTotalShakes">0</span><span class="text-xs font-normal text-[#26364A]/60 ml-0.5">회</span></span>
+        </div>
+        <div class="flex flex-col p-3 sm:p-4 rounded-2xl bg-[#F4F8FD] border border-[#DCEEFF]/60">
+          <div class="flex items-center gap-1.5 text-xs text-[#26364A]/70 font-medium mb-1">
+            <svg class="w-3.5 h-3.5 text-[#6C9FE8]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+            <span>완료 세션</span>
+          </div>
+          <span class="text-base sm:text-xl font-bold text-[#26364A] tracking-tight tabular-nums"><span id="todayCompletedSessions">0</span><span class="text-xs font-normal text-[#26364A]/60 ml-0.5">회</span></span>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyHistoryMsg" class="py-4 text-center text-xs text-[#26364A]/50">
+        아직 오늘의 집중 기록이 없습니다. 타이머를 시작하고 집중해 보세요!
+      </div>
+
+      <!-- History Accordion -->
+      <div id="historyListBox" class="hidden mt-2 pt-3 border-t border-[#DCEEFF]/60 flex flex-col gap-2">
+        <div class="flex items-center justify-between text-xs text-[#26364A]/70 font-medium mb-1">
+          <span>오늘 진행된 세션 목록</span>
+          <div id="clearConfirmBox" class="hidden flex items-center gap-1.5">
+            <span class="text-rose-500 font-semibold text-[11px]">기록 삭제?</span>
+            <button type="button" onclick="confirmClearHistory()" class="px-2 py-0.5 rounded text-[11px] bg-rose-500 text-white font-medium hover:bg-rose-600">확인</button>
+            <button type="button" onclick="cancelClearHistory()" class="px-2 py-0.5 rounded text-[11px] bg-slate-200 text-slate-700 font-medium hover:bg-slate-300">취소</button>
+          </div>
+          <button id="clearHistoryTriggerBtn" type="button" onclick="showClearConfirm()" class="flex items-center gap-1 text-[11px] text-[#26364A]/50 hover:text-rose-500 transition-colors">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            <span>전체 삭제</span>
+          </button>
+        </div>
+        <div id="historyItems" class="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full py-4 text-center text-xs text-[#26364A]/40 font-medium">
+    FOCUS ON · 나에게 온전히 집중하는 시간
+  </footer>
+
+  <!-- Completion Modal -->
+  <div id="completionModal" onclick="if(event.target===this) closeCompletionModal();" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-3xl p-6 sm:p-7 max-w-sm w-full shadow-2xl border border-[#DCEEFF] flex flex-col items-center text-center animate-soft-pulse">
+      <div class="w-16 h-16 rounded-full bg-[#DCEEFF] text-[#6C9FE8] flex items-center justify-center mb-4 shadow-inner">
+        <svg class="w-8 h-8 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+      </div>
+      <h3 class="text-xl font-bold text-[#26364A] tracking-tight">목표 시간 달성! 🎉</h3>
+      <p class="text-sm text-[#26364A]/70 mt-1 mb-5 leading-relaxed">
+        <span id="modalTargetMinutes">25</span>분 동안 멋지게 집중을 마쳤어요.<br>오늘도 한 걸음 더 성장했습니다!
+      </p>
+      <div class="w-full bg-[#F4F8FD] rounded-2xl p-4 border border-[#DCEEFF]/60 mb-5 flex justify-around">
+        <div class="flex flex-col items-center">
+          <span class="text-[11px] text-[#26364A]/60">집중 시간</span>
+          <span id="modalDuration" class="text-lg font-bold text-[#26364A] mt-0.5">25분</span>
+        </div>
+        <div class="w-px bg-[#DCEEFF]"></div>
+        <div class="flex flex-col items-center">
+          <span class="text-[11px] text-[#26364A]/60">흔들림 감지</span>
+          <span id="modalShakes" class="text-lg font-bold text-[#26364A] mt-0.5">0회</span>
+        </div>
+      </div>
+      <div id="modalEvaluation" class="text-xs font-medium text-[#6C9FE8] bg-[#DCEEFF]/40 px-3 py-1.5 rounded-full mb-6">
+        스마트폰을 전혀 건드리지 않은 완벽한 몰입! 🌟
+      </div>
+      <button onclick="closeCompletionModal()" type="button" class="w-full min-h-[48px] rounded-2xl bg-[#6C9FE8] hover:bg-[#588ce0] text-white text-sm font-semibold shadow-md shadow-[#6C9FE8]/25 flex items-center justify-center gap-2 transition-all active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>기록 확인하기</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Info & Settings Modal -->
+  <div id="infoModal" onclick="if(event.target===this) closeInfoModal();" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-[#DCEEFF] flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-[#DCEEFF] flex items-center justify-center text-[#6C9FE8]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+          </div>
+          <h3 class="font-bold text-lg text-[#26364A]">FOCUS ON 사용 가이드</h3>
+        </div>
+        <button type="button" onclick="closeInfoModal()" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors" aria-label="닫기">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-2.5 text-xs sm:text-sm text-[#26364A]/80 leading-relaxed">
+        <div class="p-3.5 rounded-2xl bg-[#F4F8FD] border border-[#DCEEFF]/70 flex flex-col gap-1.5">
+          <span class="font-semibold text-[#26364A]">어떻게 작동하나요?</span>
+          <p class="text-xs text-[#26364A]/70">
+            1. 타이머를 맞추고 <strong>'시작하기'</strong>를 누릅니다.<br>
+            2. 스마트폰을 책상 위에 얌전히 올려두고 공부를 시작합니다.<br>
+            3. 공부 도중 스마트폰을 집어 들거나 크게 건드리면 가속도 센서가 움직임을 감지하여 <strong>'집중 알림'</strong>을 표시합니다.
+          </p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-[#F4F8FD] border border-[#DCEEFF]/70 flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-[#26364A] text-xs">센서 상태</span>
+            <span id="infoSensorStatusText" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-white border border-[#DCEEFF] text-[#26364A]">확인 중...</span>
+          </div>
+          <button id="requestSensorBtn" type="button" onclick="requestSensorPermission()" class="w-full py-2 px-3 rounded-xl bg-[#6C9FE8] hover:bg-[#588ce0] text-white text-xs font-semibold transition-colors hidden">
+            스마트폰 센서 권한 허용하기
+          </button>
+          <p class="text-[11px] text-[#26364A]/60">* 센서를 지원하지 않는 PC나 권한이 없더라도 타이머와 공부 기록 기능은 정상 작동합니다.</p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-[#F4F8FD] border border-[#DCEEFF]/70 flex flex-col gap-2">
+          <span class="font-semibold text-[#26364A] text-xs">흔들림 감지 민감도</span>
+          <div class="grid grid-cols-3 gap-1.5">
+            <button type="button" onclick="setSensitivity('low')" class="sens-btn py-2 px-1 text-center rounded-xl text-xs font-semibold bg-white border border-[#DCEEFF]" data-sens="low">둔감 (큰 움직임)</button>
+            <button type="button" onclick="setSensitivity('normal')" class="sens-btn py-2 px-1 text-center rounded-xl text-xs font-semibold bg-[#6C9FE8] text-white" data-sens="normal">보통 (권장)</button>
+            <button type="button" onclick="setSensitivity('high')" class="sens-btn py-2 px-1 text-center rounded-xl text-xs font-semibold bg-white border border-[#DCEEFF]" data-sens="high">민감 (작은 터치)</button>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-[#DCEEFF]/30 border border-[#DCEEFF] flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-xs font-semibold text-[#26364A]">흔들림 알림 시연 테스트</span>
+            <span class="text-[10px] text-[#26364A]/60">PC 환경 및 기능 시연용</span>
+          </div>
+          <button type="button" onclick="triggerMockShake(); closeInfoModal();" class="px-3 py-1.5 rounded-xl bg-white border border-[#6C9FE8] text-[#6C9FE8] hover:bg-[#6C9FE8] hover:text-white text-xs font-semibold transition-all">
+            테스트 실행
+          </button>
+        </div>
+      </div>
+
+      <button type="button" onclick="closeInfoModal()" class="w-full py-2.5 rounded-2xl bg-[#F4F8FD] hover:bg-[#DCEEFF]/50 text-[#26364A] text-xs font-semibold transition-colors mt-1">닫기</button>
+    </div>
+  </div>
+
+  <!-- Standalone Script -->
+  <script>
+    // Safe Storage Helper (handles file:// and restricted privacy modes without throwing)
+    var memoryStorage = {};
+    var safeStorage = {
+      get: function(key) {
+        try {
+          var v = window.localStorage.getItem(key);
+          return v !== null ? v : (memoryStorage[key] || null);
+        } catch (e) {
+          return memoryStorage[key] || null;
+        }
+      },
+      set: function(key, val) {
+        memoryStorage[key] = val;
+        try {
+          window.localStorage.setItem(key, val);
+        } catch (e) {}
+      },
+      remove: function(key) {
+        delete memoryStorage[key];
+        try {
+          window.localStorage.removeItem(key);
+        } catch (e) {}
+      }
+    };
+
+    // Sound Manager using Web Audio API
+    var sound = {
+      ctx: null,
+      muted: safeStorage.get('focus_on_sound_muted') === 'true',
+      getCtx: function() {
+        if (!this.ctx) {
+          var AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(function(){});
+        }
+        return this.ctx;
+      },
+      playClick: function() {
+        if (this.muted) return;
+        var ctx = this.getCtx();
+        if (!ctx) return;
+        try {
+          var now = ctx.currentTime;
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.exponentialRampToValueAtTime(400, now + 0.05);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } catch (e) {}
+      },
+      playShakeAlert: function() {
+        if (this.muted) return;
+        var ctx = this.getCtx();
+        if (!ctx) return;
+        try {
+          var now = ctx.currentTime;
+          var osc1 = ctx.createOscillator();
+          var gain1 = ctx.createGain();
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(440, now);
+          osc1.frequency.exponentialRampToValueAtTime(392, now + 0.18);
+          gain1.gain.setValueAtTime(0, now);
+          gain1.gain.linearRampToValueAtTime(0.15, now + 0.02);
+          gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+          osc1.connect(gain1);
+          gain1.connect(ctx.destination);
+          osc1.start(now);
+          osc1.stop(now + 0.2);
+
+          var osc2 = ctx.createOscillator();
+          var gain2 = ctx.createGain();
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(330, now + 0.15);
+          gain2.gain.setValueAtTime(0, now + 0.15);
+          gain2.gain.linearRampToValueAtTime(0.12, now + 0.17);
+          gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+          osc2.connect(gain2);
+          gain2.connect(ctx.destination);
+          osc2.start(now + 0.15);
+          osc2.stop(now + 0.4);
+        } catch (e) {}
+      },
+      playCompletion: function() {
+        if (this.muted) return;
+        var ctx = this.getCtx();
+        if (!ctx) return;
+        try {
+          var notes = [523.25, 659.25, 783.99, 1046.5];
+          var now = ctx.currentTime;
+          notes.forEach(function(freq, i) {
+            var start = now + i * 0.15;
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, start);
+            gain.gain.setValueAtTime(0, start);
+            gain.gain.linearRampToValueAtTime(0.18, start + 0.04);
+            gain.gain.exponentialRampToValueAtTime(0.0001, start + 1.2);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(start);
+            osc.stop(start + 1.2);
+          });
+        } catch (e) {}
+      }
+    };
+
+    // App State
+    var targetMinutes = 25;
+    var remainingSeconds = 25 * 60;
+    var elapsedSeconds = 0;
+    var timerStatus = 'idle'; // idle | running | paused | completed
+    var timerInterval = null;
+    var targetEndTime = null;
+    var sessionStartTime = null;
+    var totalPausedMs = 0;
+    var pauseStartMs = 0;
+    var sessionShakeCount = 0;
+
+    var savedSens = safeStorage.get('focus_on_sensitivity');
+    var sensitivity = (savedSens === 'low' || savedSens === 'normal' || savedSens === 'high') ? savedSens : 'normal';
+    var THRESHOLDS = { low: 7.5, normal: 4.0, high: 2.2 };
+    var TILT_THRESHOLDS = { low: 30, normal: 18, high: 10 };
+    var ROT_THRESHOLDS = { low: 120, normal: 65, high: 35 };
+    var sensorStatus = 'checking'; // checking | unsupported | supported | granted | denied
+    var motionBaseline = null;
+    var prevSample = null;
+    var orientBaseline = null;
+    var lastTime = 0;
+    var lastShakeTime = 0;
+    var activeStartTime = 0;
+    var SHAKE_COOLDOWN = 4500;
+    var START_GRACE_MS = 600;
+    var listenersAttached = false;
+
+    function hasValidAxes(acc) {
+      if (!acc) return false;
+      return typeof acc.x === 'number' || typeof acc.y === 'number' || typeof acc.z === 'number';
+    }
+    function hasValidRotation(rot) {
+      if (!rot) return false;
+      return typeof rot.alpha === 'number' || typeof rot.beta === 'number' || typeof rot.gamma === 'number';
+    }
+    function detectBlockReason() {
+      if (window.isSecureContext === false) return 'insecure_context';
+      try {
+        if (window.self !== window.top) return 'iframe_blocked';
+      } catch (e) {
+        return 'iframe_blocked';
+      }
+      return 'no_hardware';
+    }
+
+    var alertDismissTimer = null;
+    var alertProgressTimer = null;
+    var isHistoryOpen = false;
+
+    var SESSIONS_KEY = 'focus_on_sessions_v1';
+    function getSavedSessions() {
+      try {
+        var raw = safeStorage.get(SESSIONS_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) { return []; }
+    }
+    function saveSessions(list) {
+      try {
+        safeStorage.set(SESSIONS_KEY, JSON.stringify(list));
+      } catch (e) {}
+    }
+
+    function getTodayStr() {
+      var d = new Date();
+      return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+    }
+
+    // DOM References
+    var timerText = document.getElementById('timerText');
+    var statusLabel = document.getElementById('statusLabel');
+    var statusBadge = document.getElementById('statusBadge');
+    var statusDot = document.getElementById('statusDot');
+    var progressCircle = document.getElementById('progressCircle');
+    var sessionShakeCountEl = document.getElementById('sessionShakeCount');
+    var startBtn = document.getElementById('startBtn');
+    var pauseBtn = document.getElementById('pauseBtn');
+    var resumeBtn = document.getElementById('resumeBtn');
+    var resetBtn = document.getElementById('resetBtn');
+    var newStudyBtn = document.getElementById('newStudyBtn');
+    var quickTestContainer = document.getElementById('quickTestContainer');
+    var stabilityBox = document.getElementById('stabilityBox');
+    var stabilityBar = document.getElementById('stabilityBar');
+    var stabilityStatus = document.getElementById('stabilityStatus');
+    var shakeAlert = document.getElementById('shakeAlert');
+    var alertProgressBar = document.getElementById('alertProgressBar');
+    var alertShakeCountBadge = document.getElementById('alertShakeCountBadge');
+
+    // UI Sound Buttons
+    function updateSoundUI() {
+      document.getElementById('soundOnIcon').classList.toggle('hidden', sound.muted);
+      document.getElementById('soundOffIcon').classList.toggle('hidden', !sound.muted);
+    }
+    function toggleSound() {
+      sound.muted = !sound.muted;
+      safeStorage.set('focus_on_sound_muted', JSON.stringify(sound.muted));
+      updateSoundUI();
+    }
+    updateSoundUI();
+
+    function formatTime(secs) {
+      var m = Math.floor(secs / 60);
+      var s = secs % 60;
+      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    function updateTimerDisplay() {
+      timerText.textContent = formatTime(remainingSeconds);
+      var totalSecs = targetMinutes * 60;
+      var progress = totalSecs > 0 ? (totalSecs - remainingSeconds) / totalSecs : 0;
+      var circumference = 2 * Math.PI * 130; // ~816.814
+      progressCircle.style.strokeDashoffset = (circumference * (1 - progress)).toFixed(2);
+      sessionShakeCountEl.textContent = sessionShakeCount + '회';
+      sessionShakeCountEl.className = 'font-bold tabular-nums ' + (sessionShakeCount > 0 ? 'text-[#6C9FE8]' : 'text-[#26364A]');
+    }
+
+    function setStatus(st) {
+      timerStatus = st;
+      if (st === 'running') {
+        statusLabel.textContent = '집중 중';
+        statusBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide mb-3 bg-[#6C9FE8] text-white transition-colors';
+        statusDot.className = 'w-2 h-2 rounded-full bg-white animate-pulse';
+        startBtn.classList.add('hidden');
+        pauseBtn.classList.remove('hidden');
+        resumeBtn.classList.add('hidden');
+        resetBtn.classList.remove('hidden');
+        newStudyBtn.classList.add('hidden');
+        quickTestContainer.classList.remove('hidden');
+        stabilityBox.classList.remove('hidden');
+        disablePresetButtons(true);
+      } else if (st === 'paused') {
+        statusLabel.textContent = '일시정지';
+        statusBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide mb-3 bg-amber-100 text-amber-800 transition-colors';
+        statusDot.className = 'w-2 h-2 rounded-full bg-amber-500';
+        startBtn.classList.add('hidden');
+        pauseBtn.classList.add('hidden');
+        resumeBtn.classList.remove('hidden');
+        resetBtn.classList.remove('hidden');
+        newStudyBtn.classList.add('hidden');
+        quickTestContainer.classList.add('hidden');
+        stabilityBox.classList.add('hidden');
+        disablePresetButtons(true);
+      } else if (st === 'completed') {
+        statusLabel.textContent = '공부 완료';
+        statusBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide mb-3 bg-[#EBF5EE] text-[#2D6A4F] transition-colors';
+        statusDot.className = 'w-2 h-2 rounded-full bg-[#2D6A4F]';
+        startBtn.classList.add('hidden');
+        pauseBtn.classList.add('hidden');
+        resumeBtn.classList.add('hidden');
+        resetBtn.classList.add('hidden');
+        newStudyBtn.classList.remove('hidden');
+        quickTestContainer.classList.add('hidden');
+        stabilityBox.classList.add('hidden');
+        disablePresetButtons(false);
+      } else {
+        statusLabel.textContent = '준비 완료';
+        statusBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide mb-3 bg-[#DCEEFF] text-[#26364A] transition-colors';
+        statusDot.className = 'w-2 h-2 rounded-full bg-[#6C9FE8]';
+        startBtn.classList.remove('hidden');
+        pauseBtn.classList.add('hidden');
+        resumeBtn.classList.add('hidden');
+        resetBtn.classList.add('hidden');
+        newStudyBtn.classList.add('hidden');
+        quickTestContainer.classList.add('hidden');
+        stabilityBox.classList.add('hidden');
+        disablePresetButtons(false);
+      }
+    }
+
+    function disablePresetButtons(disabled) {
+      document.querySelectorAll('.preset-btn, #customTimeBtn').forEach(function(b) {
+        b.disabled = disabled;
+        b.classList.toggle('opacity-40', disabled);
+        b.classList.toggle('cursor-not-allowed', disabled);
+      });
+      if (disabled) {
+        document.getElementById('customTimeBox').classList.add('hidden');
+      }
+    }
+
+    function tickTimer() {
+      if (timerStatus !== 'running' || !targetEndTime) return;
+      var now = Date.now();
+      var left = Math.max(0, Math.round((targetEndTime - now) / 1000));
+      remainingSeconds = left;
+      if (sessionStartTime) {
+        elapsedSeconds = Math.max(0, Math.floor((now - sessionStartTime - totalPausedMs) / 1000));
+      }
+      updateTimerDisplay();
+
+      if (left <= 0) {
+        clearInterval(timerInterval);
+        onTimerComplete();
+      }
+    }
+
+    async function startTimer() {
+      sound.playClick();
+      sessionShakeCount = 0;
+      elapsedSeconds = 0;
+      dismissShakeAlert();
+
+      if (sensorStatus === 'supported') {
+        await requestSensorPermission();
+      }
+
+      activeStartTime = Date.now();
+      motionBaseline = null;
+      prevSample = null;
+      orientBaseline = null;
+      sessionStartTime = Date.now();
+      totalPausedMs = 0;
+      targetEndTime = Date.now() + remainingSeconds * 1000;
+      setStatus('running');
+      updateTimerDisplay();
+
+      clearInterval(timerInterval);
+      timerInterval = setInterval(tickTimer, 200);
+    }
+
+    function pauseTimer() {
+      if (timerStatus !== 'running') return;
+      sound.playClick();
+      var now = Date.now();
+      pauseStartMs = now;
+      if (targetEndTime) {
+        remainingSeconds = Math.max(0, Math.round((targetEndTime - now) / 1000));
+      }
+      clearInterval(timerInterval);
+      setStatus('paused');
+      updateTimerDisplay();
+    }
+
+    function resumeTimer() {
+      if (timerStatus !== 'paused') return;
+      sound.playClick();
+      var now = Date.now();
+      if (pauseStartMs > 0) {
+        totalPausedMs += (now - pauseStartMs);
+        pauseStartMs = 0;
+      }
+      activeStartTime = now;
+      motionBaseline = null;
+      prevSample = null;
+      orientBaseline = null;
+      targetEndTime = now + remainingSeconds * 1000;
+      setStatus('running');
+      clearInterval(timerInterval);
+      timerInterval = setInterval(tickTimer, 200);
+    }
+
+    function resetTimer() {
+      sound.playClick();
+      clearInterval(timerInterval);
+      if (elapsedSeconds >= 30 && timerStatus !== 'completed') {
+        recordSession(targetMinutes, elapsedSeconds, sessionShakeCount, false);
+      }
+      remainingSeconds = targetMinutes * 60;
+      sessionShakeCount = 0;
+      elapsedSeconds = 0;
+      targetEndTime = null;
+      sessionStartTime = null;
+      totalPausedMs = 0;
+      pauseStartMs = 0;
+      dismissShakeAlert();
+      setStatus('idle');
+      updateTimerDisplay();
+      renderStats();
+    }
+
+    function selectDuration(mins) {
+      if (timerStatus !== 'idle' && timerStatus !== 'completed') return;
+      targetMinutes = mins;
+      remainingSeconds = mins * 60;
+      elapsedSeconds = 0;
+      document.querySelectorAll('.preset-btn').forEach(function(btn) {
+        var m = parseInt(btn.getAttribute('data-mins'), 10);
+        if (m === mins) {
+          btn.className = 'preset-btn min-h-[44px] px-4 py-2 rounded-2xl text-sm font-semibold bg-[#6C9FE8] text-white shadow-md shadow-[#6C9FE8]/25 scale-105 transition-all duration-200 select-none';
+        } else {
+          btn.className = 'preset-btn min-h-[44px] px-4 py-2 rounded-2xl text-sm font-semibold border border-[#DCEEFF] bg-white text-[#26364A] hover:bg-[#DCEEFF]/50 transition-all duration-200 select-none active:scale-95';
+        }
+      });
+      document.getElementById('customTimeBtn').className = 'min-h-[44px] px-3.5 py-2 rounded-2xl text-sm font-semibold border border-[#DCEEFF] bg-white text-[#26364A] hover:bg-[#DCEEFF]/50 transition-all duration-200 flex items-center gap-1.5 active:scale-95';
+      document.getElementById('customTimeLabel').textContent = '직접 설정';
+      document.getElementById('customTimeBox').classList.add('hidden');
+      if (timerStatus === 'completed') setStatus('idle');
+      updateTimerDisplay();
+    }
+
+    function toggleCustomTime() {
+      if (timerStatus !== 'idle' && timerStatus !== 'completed') return;
+      var box = document.getElementById('customTimeBox');
+      box.classList.toggle('hidden');
+      if (!box.classList.contains('hidden')) {
+        var input = document.getElementById('customInput');
+        input.value = targetMinutes;
+        input.focus();
+      }
+    }
+
+    function applyCustomTime() {
+      var val = parseInt(document.getElementById('customInput').value, 10);
+      if (!isNaN(val) && val >= 1 && val <= 180) {
+        targetMinutes = val;
+        remainingSeconds = val * 60;
+        elapsedSeconds = 0;
+        document.querySelectorAll('.preset-btn').forEach(function(btn) {
+          btn.className = 'preset-btn min-h-[44px] px-4 py-2 rounded-2xl text-sm font-semibold border border-[#DCEEFF] bg-white text-[#26364A] hover:bg-[#DCEEFF]/50 transition-all duration-200 select-none active:scale-95';
+        });
+        var cBtn = document.getElementById('customTimeBtn');
+        cBtn.className = 'min-h-[44px] px-3.5 py-2 rounded-2xl text-sm font-semibold bg-[#6C9FE8] text-white shadow-md shadow-[#6C9FE8]/25 flex items-center gap-1.5 transition-all duration-200 active:scale-95';
+        document.getElementById('customTimeLabel').textContent = val + '분';
+        document.getElementById('customTimeBox').classList.add('hidden');
+        if (timerStatus === 'completed') setStatus('idle');
+        updateTimerDisplay();
+      }
+    }
+
+    // Shake & Motion Logic (EMA baseline + linear acceleration + orientation tilt)
+    function updateStabilityUI(combinedMagnitude, th) {
+      var percent = Math.min(100, Math.round((combinedMagnitude / th) * 100));
+      stabilityBar.style.width = Math.max(6, percent) + '%';
+      if (percent > 80) {
+        stabilityBar.className = 'h-full bg-rose-400 rounded-full transition-all duration-150';
+        stabilityStatus.textContent = '흔들림!';
+      } else if (percent > 40) {
+        stabilityBar.className = 'h-full bg-amber-400 rounded-full transition-all duration-150';
+        stabilityStatus.textContent = '주의';
+      } else {
+        stabilityBar.className = 'h-full bg-[#6C9FE8] rounded-full transition-all duration-150';
+        stabilityStatus.textContent = '안정적';
+      }
+    }
+
+    function triggerIfRunning(now) {
+      if (timerStatus !== 'running') return;
+      if (now - activeStartTime < START_GRACE_MS) return;
+      if (now - lastShakeTime > SHAKE_COOLDOWN) {
+        lastShakeTime = now;
+        motionBaseline = null;
+        orientBaseline = null;
+        triggerShakeAlert(true);
+      }
+    }
+
+    function handleMotion(e) {
+      var hasAcc = hasValidAxes(e.accelerationIncludingGravity) || hasValidAxes(e.acceleration);
+      var hasRot = hasValidRotation(e.rotationRate);
+      if (!hasAcc && !hasRot) return;
+
+      var now = Date.now();
+      if (now - lastTime < 40) return;
+      lastTime = now;
+
+      if (sensorStatus !== 'granted') {
+        sensorStatus = 'granted';
+        updateSensorUI('granted');
+      }
+
+      var linearMag = 0;
+      if (hasValidAxes(e.acceleration)) {
+        var lx = e.acceleration.x || 0;
+        var ly = e.acceleration.y || 0;
+        var lz = e.acceleration.z || 0;
+        linearMag = Math.sqrt(lx * lx + ly * ly + lz * lz);
+      }
+
+      var gravityDeltaMag = 0;
+      if (hasValidAxes(e.accelerationIncludingGravity)) {
+        var gx = e.accelerationIncludingGravity.x || 0;
+        var gy = e.accelerationIncludingGravity.y || 0;
+        var gz = e.accelerationIncludingGravity.z || 0;
+
+        if (!motionBaseline) {
+          motionBaseline = { x: gx, y: gy, z: gz };
+          prevSample = { x: gx, y: gy, z: gz };
+        } else {
+          var dxBase = gx - motionBaseline.x;
+          var dyBase = gy - motionBaseline.y;
+          var dzBase = gz - motionBaseline.z;
+          var baseDev = Math.sqrt(dxBase * dxBase + dyBase * dyBase + dzBase * dzBase);
+
+          var p = prevSample || motionBaseline;
+          var dxPrev = gx - p.x;
+          var dyPrev = gy - p.y;
+          var dzPrev = gz - p.z;
+          var jerkDev = Math.sqrt(dxPrev * dxPrev + dyPrev * dyPrev + dzPrev * dzPrev);
+
+          gravityDeltaMag = Math.max(baseDev, jerkDev);
+
+          var alpha = 0.06;
+          motionBaseline = {
+            x: motionBaseline.x * (1 - alpha) + gx * alpha,
+            y: motionBaseline.y * (1 - alpha) + gy * alpha,
+            z: motionBaseline.z * (1 - alpha) + gz * alpha
+          };
+          prevSample = { x: gx, y: gy, z: gz };
+        }
+      }
+
+      var th = THRESHOLDS[sensitivity] || 4.0;
+      var rotTh = ROT_THRESHOLDS[sensitivity] || 65;
+      var rotEquivalentMag = 0;
+      if (hasRot) {
+        var maxRot = Math.max(
+          Math.abs(e.rotationRate.alpha || 0),
+          Math.abs(e.rotationRate.beta || 0),
+          Math.abs(e.rotationRate.gamma || 0)
+        );
+        if (maxRot > rotTh) {
+          rotEquivalentMag = (maxRot / rotTh) * th;
+        }
+      }
+
+      var combinedMagnitude = Math.max(linearMag, gravityDeltaMag, rotEquivalentMag);
+      updateStabilityUI(combinedMagnitude, th);
+
+      if (combinedMagnitude > th) {
+        triggerIfRunning(now);
+      }
+    }
+
+    function handleOrientation(e) {
+      if (typeof e.beta !== 'number' || typeof e.gamma !== 'number') return;
+      var now = Date.now();
+      var beta = e.beta;
+      var gamma = e.gamma;
+
+      if (!orientBaseline) {
+        orientBaseline = { beta: beta, gamma: gamma };
+        return;
+      }
+
+      var dBeta = Math.abs(beta - orientBaseline.beta);
+      var dGamma = Math.abs(gamma - orientBaseline.gamma);
+      var tiltDelta = Math.max(dBeta, dGamma);
+
+      var alpha = 0.04;
+      orientBaseline = {
+        beta: orientBaseline.beta * (1 - alpha) + beta * alpha,
+        gamma: orientBaseline.gamma * (1 - alpha) + gamma * alpha
+      };
+
+      var tiltTh = TILT_THRESHOLDS[sensitivity] || 18;
+      if (tiltDelta > tiltTh) {
+        var th = THRESHOLDS[sensitivity] || 4.0;
+        updateStabilityUI((tiltDelta / tiltTh) * th, th);
+        triggerIfRunning(now);
+      }
+    }
+
+    function attachSensorListeners() {
+      if (listenersAttached) {
+        window.removeEventListener('devicemotion', handleMotion);
+        window.removeEventListener('deviceorientation', handleOrientation);
+      }
+      window.addEventListener('devicemotion', handleMotion, { passive: true });
+      window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+      listenersAttached = true;
+    }
+
+    function triggerShakeAlert(countSession) {
+      if (countSession) {
+        sessionShakeCount++;
+        updateTimerDisplay();
+        alertShakeCountBadge.textContent = '감지 ' + sessionShakeCount + '회';
+      } else {
+        alertShakeCountBadge.textContent = '테스트 알림';
+      }
+      sound.playShakeAlert();
+      showShakeAlert();
+    }
+
+    function triggerMockShake() {
+      var now = Date.now();
+      if (now - lastShakeTime > SHAKE_COOLDOWN) {
+        lastShakeTime = now;
+        triggerShakeAlert(timerStatus === 'running');
+      } else {
+        showShakeAlert();
+        sound.playShakeAlert();
+      }
+    }
+
+    function showShakeAlert() {
+      shakeAlert.classList.remove('hidden');
+      alertProgressBar.style.width = '100%';
+      clearInterval(alertProgressTimer);
+      clearTimeout(alertDismissTimer);
+
+      var duration = 4500;
+      var intervalTime = 50;
+      var step = (intervalTime / duration) * 100;
+      var p = 100;
+
+      alertProgressTimer = setInterval(function() {
+        p -= step;
+        alertProgressBar.style.width = Math.max(0, p) + '%';
+        if (p <= 0) {
+          clearInterval(alertProgressTimer);
+        }
+      }, intervalTime);
+
+      alertDismissTimer = setTimeout(function() {
+        dismissShakeAlert();
+      }, duration);
+    }
+
+    function dismissShakeAlert() {
+      shakeAlert.classList.add('hidden');
+      clearTimeout(alertDismissTimer);
+      clearInterval(alertProgressTimer);
+    }
+
+    function initSensor() {
+      var hasMotion = 'DeviceMotionEvent' in window;
+      var hasOrient = 'DeviceOrientationEvent' in window;
+      if (!hasMotion && !hasOrient) {
+        sensorStatus = 'unsupported';
+        updateSensorUI('unsupported');
+        return;
+      }
+      var isIOS = hasMotion && typeof DeviceMotionEvent.requestPermission === 'function';
+      if (isIOS) {
+        sensorStatus = 'supported';
+        updateSensorUI('supported');
+      } else {
+        var gotData = false;
+        var probeMotion = function(ev) {
+          if (hasValidAxes(ev.accelerationIncludingGravity) || hasValidAxes(ev.acceleration)) {
+            gotData = true;
+            sensorStatus = 'granted';
+            updateSensorUI('granted');
+            window.removeEventListener('devicemotion', probeMotion);
+            window.removeEventListener('deviceorientation', probeOrient);
+          }
+        };
+        var probeOrient = function(ev) {
+          if (typeof ev.beta === 'number' || typeof ev.gamma === 'number') {
+            gotData = true;
+            sensorStatus = 'granted';
+            updateSensorUI('granted');
+            window.removeEventListener('devicemotion', probeMotion);
+            window.removeEventListener('deviceorientation', probeOrient);
+          }
+        };
+        if (hasMotion) window.addEventListener('devicemotion', probeMotion, { passive: true });
+        if (hasOrient) window.addEventListener('deviceorientation', probeOrient, { passive: true });
+        setTimeout(function() {
+          window.removeEventListener('devicemotion', probeMotion);
+          window.removeEventListener('deviceorientation', probeOrient);
+          if (!gotData) {
+            sensorStatus = 'unsupported';
+            updateSensorUI('unsupported');
+          }
+        }, 2000);
+        attachSensorListeners();
+      }
+    }
+
+    function updateSensorUI(st) {
+      var badge = document.getElementById('sensorBadge');
+      var text = document.getElementById('sensorBadgeText');
+      var phoneIcon = document.getElementById('sensorPhoneIcon');
+      var laptopIcon = document.getElementById('sensorLaptopIcon');
+      var infoText = document.getElementById('infoSensorStatusText');
+      var reqBtn = document.getElementById('requestSensorBtn');
+      var pcBanner = document.getElementById('pcBanner');
+      var deniedBanner = document.getElementById('deniedBanner');
+
+      pcBanner.classList.add('hidden');
+      deniedBanner.classList.add('hidden');
+      reqBtn.classList.add('hidden');
+
+      if (st === 'granted') {
+        badge.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-[#EBF5EE] text-[#2D6A4F] transition-colors';
+        text.textContent = '센서 활성';
+        phoneIcon.classList.remove('hidden');
+        phoneIcon.setAttribute('class', 'w-3.5 h-3.5 text-[#2D6A4F]');
+        laptopIcon.classList.add('hidden');
+        infoText.textContent = '정상 작동 중 (허용됨)';
+      } else if (st === 'supported') {
+        badge.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-[#DCEEFF] text-[#26364A] hover:bg-[#cde4fc] transition-colors cursor-pointer';
+        text.textContent = '센서 연동';
+        phoneIcon.classList.remove('hidden');
+        phoneIcon.setAttribute('class', 'w-3.5 h-3.5 text-[#6C9FE8]');
+        laptopIcon.classList.add('hidden');
+        infoText.textContent = '권한 요청 필요';
+        reqBtn.classList.remove('hidden');
+      } else if (st === 'denied') {
+        badge.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-amber-50 text-amber-800 transition-colors';
+        text.textContent = '권한 거부';
+        phoneIcon.classList.remove('hidden');
+        phoneIcon.setAttribute('class', 'w-3.5 h-3.5 text-amber-600');
+        laptopIcon.classList.add('hidden');
+        infoText.textContent = '센서 권한 거부됨';
+        deniedBanner.classList.remove('hidden');
+      } else {
+        var reason = detectBlockReason();
+        badge.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-[#26364A]/70 transition-colors';
+        text.textContent = 'PC 모드';
+        phoneIcon.classList.add('hidden');
+        laptopIcon.classList.remove('hidden');
+        var bannerMsgEl = document.getElementById('pcBannerText');
+        if (reason === 'iframe_blocked') {
+          infoText.textContent = '미리보기 창(iframe) 제한';
+          if (bannerMsgEl) bannerMsgEl.textContent = '미리보기 프레임(iframe)에서는 모션 센서가 제한될 수 있습니다. 스마트폰 브라우저 새 탭에서 직접 열어보세요.';
+        } else if (reason === 'insecure_context') {
+          infoText.textContent = '보안 환경(HTTPS) 필요';
+          if (bannerMsgEl) bannerMsgEl.textContent = '로컬 파일(file://) 또는 HTTP 환경에서는 브라우저 보안상 모션 센서가 제한됩니다.';
+        } else {
+          infoText.textContent = 'PC/센서 미지원 환경';
+          if (bannerMsgEl) bannerMsgEl.textContent = 'PC 환경: 타이머는 정상 작동하며, 아래 버튼으로 흔들림 감지를 시험해볼 수 있습니다.';
+        }
+        pcBanner.classList.remove('hidden');
+      }
+    }
+
+    function handleSensorBadgeClick() {
+      if (sensorStatus === 'supported') {
+        requestSensorPermission();
+      } else {
+        openInfoModal();
+      }
+    }
+
+    async function requestSensorPermission() {
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+          var motionPromise = DeviceMotionEvent.requestPermission();
+          var orientPromise = (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function')
+            ? DeviceOrientationEvent.requestPermission().catch(function() { return 'denied'; })
+            : Promise.resolve('granted');
+          var results = await Promise.all([motionPromise, orientPromise]);
+          if (results[0] === 'granted') {
+            sensorStatus = 'granted';
+            updateSensorUI('granted');
+            attachSensorListeners();
+          } else {
+            sensorStatus = 'denied';
+            updateSensorUI('denied');
+          }
+        } catch (e) {
+          sensorStatus = 'denied';
+          updateSensorUI('denied');
+        }
+      }
+    }
+
+    function setSensitivity(lvl) {
+      sensitivity = lvl;
+      safeStorage.set('focus_on_sensitivity', lvl);
+      document.querySelectorAll('.sens-btn').forEach(function(btn) {
+        var match = btn.getAttribute('data-sens') === lvl;
+        btn.className = match
+          ? 'sens-btn py-2 px-1 text-center rounded-xl text-xs font-semibold bg-[#6C9FE8] text-white shadow-sm transition-all'
+          : 'sens-btn py-2 px-1 text-center rounded-xl text-xs font-semibold bg-white text-[#26364A]/70 border border-[#DCEEFF] hover:bg-[#DCEEFF]/30 transition-all';
+      });
+    }
+
+    function onTimerComplete() {
+      setStatus('completed');
+      sound.playCompletion();
+      recordSession(targetMinutes, targetMinutes * 60, sessionShakeCount, true);
+      renderStats();
+
+      document.getElementById('modalTargetMinutes').textContent = targetMinutes;
+      document.getElementById('modalDuration').textContent = targetMinutes + '분';
+      document.getElementById('modalShakes').textContent = sessionShakeCount + '회';
+
+      var evalEl = document.getElementById('modalEvaluation');
+      if (sessionShakeCount === 0) {
+        evalEl.textContent = '스마트폰을 전혀 건드리지 않은 완벽한 몰입! 🌟';
+      } else if (sessionShakeCount <= 2) {
+        evalEl.textContent = '유혹을 이겨내고 끝까지 집중했어요! 👍';
+      } else {
+        evalEl.textContent = '다음에는 스마트폰을 조금 더 멀리 두고 도전해 볼까요? 💪';
+      }
+      document.getElementById('completionModal').classList.remove('hidden');
+    }
+
+    function closeCompletionModal() {
+      document.getElementById('completionModal').classList.add('hidden');
+      resetTimer();
+    }
+
+    function recordSession(targetMin, actualSec, shakes, completed) {
+      if (actualSec < 10 && !completed) return;
+      var d = new Date();
+      var sessions = getSavedSessions();
+      sessions.unshift({
+        id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+        timestamp: Date.now(),
+        dateStr: getTodayStr(),
+        timeStr: String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'),
+        targetMinutes: targetMin,
+        actualSeconds: actualSec,
+        shakeCount: shakes,
+        completed: completed
+      });
+      saveSessions(sessions);
+    }
+
+    function formatDurationKorean(secs) {
+      if (secs <= 0) return '0분';
+      var h = Math.floor(secs / 3600);
+      var m = Math.floor((secs % 3600) / 60);
+      var s = secs % 60;
+      if (h > 0) return m > 0 ? (h + '시간 ' + m + '분') : (h + '시간');
+      if (m > 0) return m + '분';
+      return s + '초';
+    }
+
+    function renderStats() {
+      var todayStr = getTodayStr();
+      document.getElementById('todayDateLabel').textContent = todayStr + ' 기준';
+      var sessions = getSavedSessions().filter(function(s) { return s.dateStr === todayStr; });
+
+      var totalSec = sessions.reduce(function(acc, s) { return acc + s.actualSeconds; }, 0);
+      var totalShakes = sessions.reduce(function(acc, s) { return acc + s.shakeCount; }, 0);
+      var completed = sessions.filter(function(s) { return s.completed; }).length;
+
+      document.getElementById('todayTotalDuration').textContent = formatDurationKorean(totalSec);
+      document.getElementById('todayTotalShakes').textContent = totalShakes;
+      document.getElementById('todayCompletedSessions').textContent = completed;
+      document.getElementById('historyCountLabel').textContent = '세션 내역 ' + sessions.length + '개';
+
+      var toggleBtn = document.getElementById('toggleHistoryBtn');
+      var emptyMsg = document.getElementById('emptyHistoryMsg');
+      var listBox = document.getElementById('historyListBox');
+
+      if (sessions.length === 0) {
+        toggleBtn.classList.add('hidden');
+        emptyMsg.classList.remove('hidden');
+        listBox.classList.add('hidden');
+        isHistoryOpen = false;
+        return;
+      }
+
+      toggleBtn.classList.remove('hidden');
+      emptyMsg.classList.add('hidden');
+
+      var listEl = document.getElementById('historyItems');
+      listEl.innerHTML = '';
+
+      sessions.forEach(function(s) {
+        var badgeText = '완벽한 몰입 🌟';
+        var badgeColor = 'bg-[#DCEEFF] text-[#26364A]';
+        if (s.shakeCount === 0 && s.completed) {
+          badgeText = '완벽한 몰입 🌟';
+          badgeColor = 'bg-[#DCEEFF] text-[#26364A]';
+        } else if (s.shakeCount <= 2) {
+          badgeText = '좋은 집중 👍';
+          badgeColor = 'bg-[#EBF5EE] text-[#2D6A4F]';
+        } else {
+          badgeText = '흔들림 ' + s.shakeCount + '회';
+          badgeColor = 'bg-amber-50 text-amber-700';
+        }
+
+        var row = document.createElement('div');
+        row.className = 'flex items-center justify-between p-3 rounded-2xl bg-[#F4F8FD] border border-[#DCEEFF]/40 text-xs text-[#26364A]';
+
+        var infoDiv = document.createElement('div');
+        infoDiv.className = 'flex flex-col';
+
+        var topLine = document.createElement('div');
+        topLine.className = 'flex items-center gap-2';
+
+        var durSpan = document.createElement('span');
+        durSpan.className = 'font-semibold text-sm text-[#26364A]';
+        durSpan.textContent = formatDurationKorean(s.actualSeconds) + ' 공부';
+
+        var badgeSpan = document.createElement('span');
+        badgeSpan.className = 'text-[10px] font-medium px-2 py-0.5 rounded-full ' + badgeColor;
+        badgeSpan.textContent = badgeText;
+
+        topLine.appendChild(durSpan);
+        topLine.appendChild(badgeSpan);
+
+        var subSpan = document.createElement('span');
+        subSpan.className = 'text-[11px] text-[#26364A]/50 mt-0.5';
+        subSpan.textContent = s.timeStr + ' 시작 · 목표 ' + s.targetMinutes + '분 · 흔들림 ' + s.shakeCount + '회';
+
+        infoDiv.appendChild(topLine);
+        infoDiv.appendChild(subSpan);
+
+        var delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors';
+        delBtn.title = '기록 삭제';
+        delBtn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+        delBtn.onclick = function() { deleteSession(s.id); };
+
+        row.appendChild(infoDiv);
+        row.appendChild(delBtn);
+        listEl.appendChild(row);
+      });
+    }
+
+    function deleteSession(id) {
+      var sessions = getSavedSessions().filter(function(s) { return s.id !== id; });
+      saveSessions(sessions);
+      renderStats();
+    }
+
+    function showClearConfirm() {
+      document.getElementById('clearHistoryTriggerBtn').classList.add('hidden');
+      document.getElementById('clearConfirmBox').classList.remove('hidden');
+    }
+    function cancelClearHistory() {
+      document.getElementById('clearConfirmBox').classList.add('hidden');
+      document.getElementById('clearHistoryTriggerBtn').classList.remove('hidden');
+    }
+    function confirmClearHistory() {
+      saveSessions([]);
+      safeStorage.remove(SESSIONS_KEY);
+      cancelClearHistory();
+      renderStats();
+    }
+
+    function toggleHistoryList() {
+      isHistoryOpen = !isHistoryOpen;
+      document.getElementById('historyListBox').classList.toggle('hidden', !isHistoryOpen);
+      document.getElementById('historyChevronDown').classList.toggle('hidden', isHistoryOpen);
+      document.getElementById('historyChevronUp').classList.toggle('hidden', !isHistoryOpen);
+    }
+
+    function openInfoModal() {
+      document.getElementById('infoModal').classList.remove('hidden');
+    }
+    function closeInfoModal() {
+      document.getElementById('infoModal').classList.add('hidden');
+    }
+
+    // Keep display synced immediately when returning from background tab or lock screen
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden && timerStatus === 'running') {
+        tickTimer();
+      }
+    });
+
+    // Close modals with Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeInfoModal();
+        if (!document.getElementById('completionModal').classList.contains('hidden')) {
+          closeCompletionModal();
+        }
+      }
+    });
+
+    // Init
+    initSensor();
+    updateTimerDisplay();
+    renderStats();
+    setSensitivity(sensitivity);
+  </script>
+</body>
+</html>
