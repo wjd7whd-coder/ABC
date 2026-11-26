@@ -1,0 +1,4688 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>바른목ON (BarunMok ON)</title>
+    <meta name="description" content="스마트폰의 가속도 센서와 자이로 센서를 활용해 기기 기울기와 움직임을 실시간으로 측정하고, 자세 변화 기록과 주간·월간 통계를 분석하는 모바일 웹 앱입니다." />
+    <meta property="og:title" content="바른목ON (BarunMok ON)" />
+    <meta property="og:description" content="스마트폰 센서 기반 실시간 자세 추정 및 주간·월간 습관 분석 웹 앱" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      :root {
+        --bg-canvas: #f2f8fd;
+        --bg-surface: #ffffff;
+        --bg-subtle: #e8f3fc;
+        --border-hairline: rgba(14, 116, 178, 0.13);
+        --border-strong: rgba(14, 116, 178, 0.25);
+        --text-primary: #0f172a;
+        --text-secondary: #334155;
+        --text-muted: #64748b;
+        --accent: #0284c7;
+        --accent-hover: #0369a1;
+        --accent-soft: #e0f2fe;
+
+        /* State Colors */
+        --safe-bg: #e0f2fe;
+        --safe-surface: #f0f9ff;
+        --safe-text: #0369a1;
+        --safe-bar: #0ea5e9;
+
+        --caution-bg: #dcfce7;
+        --caution-surface: #f0fdf4;
+        --caution-text: #15803d;
+        --caution-bar: #22c55e;
+
+        --warning-bg: #fef9c3;
+        --warning-surface: #fefce8;
+        --warning-text: #a16207;
+        --warning-bar: #eab308;
+
+        --danger-bg: #fee2e2;
+        --danger-surface: #fef2f2;
+        --danger-text: #b91c1c;
+        --danger-bar: #ef4444;
+
+        --radius-card: 20px;
+        --radius-sm: 12px;
+        --shadow-card: 0 4px 18px rgba(2, 132, 199, 0.06);
+        --header-h: 56px;
+        --bottom-nav-h: 62px;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      html,
+      body {
+        height: 100%;
+        font-family: 'Apple SD Gothic Neo', 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        color: var(--text-primary);
+        background-color: var(--bg-canvas);
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input,
+      select {
+        font-family: inherit;
+        color: inherit;
+      }
+
+      button {
+        cursor: pointer;
+        border: none;
+        background: none;
+        min-height: 44px;
+        transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+      }
+
+      button:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+
+      button:focus-visible,
+      input:focus-visible,
+      a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      button:disabled {
+        opacity: 0.48;
+        cursor: not-allowed;
+      }
+
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* App Shell & Posture Background Transitions */
+      .app-shell {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--bg-canvas);
+        transition: background-color 0.45s ease;
+      }
+
+      .app-shell.state-safe {
+        background-color: var(--safe-bg);
+      }
+      .app-shell.state-caution {
+        background-color: var(--caution-bg);
+      }
+      .app-shell.state-warning {
+        background-color: var(--warning-bg);
+      }
+      .app-shell.state-danger {
+        background-color: var(--danger-bg);
+      }
+
+      /* Top Navigation Bar (Desktop 3-Zone + Compact Mobile Header) */
+      .top-header {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        height: var(--header-h);
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border-hairline);
+      }
+
+      .header-inner {
+        max-width: 1120px;
+        height: 100%;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .brand-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.125rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding: 4px 2px;
+      }
+
+      .brand-mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        background: var(--accent);
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .desktop-nav {
+        display: none;
+        align-items: center;
+        gap: 24px;
+      }
+
+      .desktop-nav-link {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding: 8px 4px;
+        position: relative;
+      }
+
+      .desktop-nav-link:hover {
+        color: var(--text-primary);
+      }
+
+      .desktop-nav-link.active {
+        color: var(--accent-hover);
+      }
+
+      .desktop-nav-link.active::after {
+        content: "";
+        position: absolute;
+        left: 4px;
+        right: 4px;
+        bottom: 4px;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--accent);
+      }
+
+      .header-cta {
+        display: none;
+      }
+
+      .mobile-page-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+
+      /* Main Content Area */
+      .main-content {
+        flex: 1;
+        width: 100%;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 18px 16px calc(var(--bottom-nav-h) + 28px + env(safe-area-inset-bottom, 0px));
+      }
+
+      /* Views */
+      .view-panel {
+        display: none;
+      }
+
+      .view-panel.active {
+        display: block;
+      }
+
+      /* Mobile Bottom Navigation */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 40;
+        height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-top: 1px solid var(--border-hairline);
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+      }
+
+      .bottom-nav-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        min-height: 44px;
+        color: var(--text-muted);
+        font-size: 0.6875rem;
+        font-weight: 600;
+        white-space: nowrap;
+        padding: 4px 2px;
+      }
+
+      .bottom-nav-btn.active {
+        color: var(--accent-hover);
+      }
+
+      .bottom-nav-btn svg {
+        width: 21px;
+        height: 21px;
+      }
+
+      /* Cards & Layout Grids */
+      .card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-hairline);
+        border-radius: var(--radius-card);
+        padding: 20px;
+        box-shadow: var(--shadow-card);
+      }
+
+      .card-subtle {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-hairline);
+        border-radius: var(--radius-sm);
+        padding: 14px 16px;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .grid-3 {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .stack-sm {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .stack-md {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .stack-lg {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+
+      /* Typography */
+      .hero-title {
+        font-size: clamp(1.5rem, 3vw, 2.125rem);
+        font-weight: 800;
+        line-height: 1.25;
+        letter-spacing: -0.025em;
+        color: var(--text-primary);
+        text-wrap: balance;
+      }
+
+      .section-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        color: var(--text-primary);
+      }
+
+      .card-title {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .meta-line {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+      }
+
+      .body-text {
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border-radius: 14px;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        padding: 12px 22px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-height: 48px;
+      }
+
+      .btn-sm {
+        min-height: 44px;
+        padding: 8px 16px;
+        font-size: 0.875rem;
+        border-radius: 12px;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(2, 132, 199, 0.22);
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: var(--accent-hover);
+      }
+
+      .btn-secondary {
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        border: 1px solid var(--border-strong);
+      }
+
+      .btn-secondary:hover:not(:disabled) {
+        background: var(--bg-subtle);
+      }
+
+      .btn-danger {
+        background: #dc2626;
+        color: #ffffff;
+      }
+
+      .btn-danger:hover:not(:disabled) {
+        background: #b91c1c;
+      }
+
+      .btn-ghost-danger {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid rgba(185, 28, 28, 0.2);
+      }
+
+      .btn-ghost-danger:hover:not(:disabled) {
+        background: #fee2e2;
+      }
+
+      /* Segmented Control */
+      .segmented {
+        display: inline-flex;
+        padding: 4px;
+        background: rgba(14, 116, 178, 0.08);
+        border-radius: 14px;
+        gap: 4px;
+      }
+
+      .segmented-btn {
+        min-height: 40px;
+        padding: 6px 18px;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+
+      .segmented-btn.active {
+        background: var(--bg-surface);
+        color: var(--accent-hover);
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+      }
+
+      /* Hero Section on Home */
+      .home-hero {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+        align-items: center;
+        background: linear-gradient(135deg, #ffffff 0%, #e7f4fe 100%);
+      }
+
+      .hero-illustration {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+      }
+
+      /* Progress Bar */
+      .progress-track {
+        width: 100%;
+        height: 10px;
+        background: rgba(14, 116, 178, 0.12);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: var(--accent);
+        transition: width 0.35s ease;
+      }
+
+      /* KPI Tile */
+      .kpi-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-hairline);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .kpi-label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+
+      .kpi-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+      }
+
+      .kpi-sub {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      /* Live Measure Screen */
+      .measure-stage {
+        border-radius: 24px;
+        padding: 24px 20px;
+        background: rgba(255, 255, 255, 0.86);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        transition: background-color 0.4s ease, border-color 0.4s ease;
+      }
+
+      /* Compact Mini-View for Android Split-Screen / Pop-up View */
+      .app-shell.compact-measure .top-header,
+      .app-shell.compact-measure .bottom-nav,
+      .app-shell.compact-measure #measureGuideMsg,
+      .app-shell.compact-measure .tilt-gauge-wrap,
+      .app-shell.compact-measure #rawSensorVerifyCard,
+      .app-shell.compact-measure #multiAppGuideBox,
+      .app-shell.compact-measure #btnCalibrate {
+        display: none !important;
+      }
+
+      .app-shell.compact-measure .main-content {
+        padding: 10px 10px 14px !important;
+      }
+
+      .app-shell.compact-measure .measure-stage {
+        padding: 14px 14px !important;
+        border-radius: 16px !important;
+      }
+
+      .app-shell.compact-measure .elapsed-clock {
+        font-size: 1.75rem !important;
+      }
+
+      .app-shell.compact-measure .measure-state-heading {
+        font-size: 1.2rem !important;
+      }
+
+      .measure-state-heading {
+        font-size: clamp(1.75rem, 4vw, 2.35rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+      }
+
+      .state-text-safe { color: var(--safe-text); }
+      .state-text-caution { color: var(--caution-text); }
+      .state-text-warning { color: var(--warning-text); }
+      .state-text-danger { color: var(--danger-text); }
+
+      .tilt-gauge-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .elapsed-clock {
+        font-size: clamp(2rem, 5vw, 2.75rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--text-primary);
+      }
+
+      .state-breakdown-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .state-stat-box {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-hairline);
+        border-radius: 16px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .state-stat-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.8125rem;
+        font-weight: 700;
+      }
+
+      .state-swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        display: inline-block;
+        margin-right: 6px;
+      }
+
+      /* Alert & Notice Banners */
+      .notice-box {
+        border-radius: 16px;
+        padding: 14px 16px;
+        border: 1px solid var(--border-strong);
+        background: var(--bg-surface);
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .notice-box.warn {
+        background: #fffbeb;
+        border-color: rgba(217, 119, 6, 0.35);
+        color: #92400e;
+      }
+
+      .notice-box.err {
+        background: #fef2f2;
+        border-color: rgba(220, 38, 38, 0.35);
+        color: #991b1b;
+      }
+
+      .notice-box.info {
+        background: #f0f9ff;
+        border-color: rgba(2, 132, 199, 0.25);
+        color: #075985;
+      }
+
+      /* Stacked Mini Bar */
+      .mini-stack-bar {
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: #e2e8f0;
+        overflow: hidden;
+        display: flex;
+      }
+
+      .mini-stack-seg {
+        height: 100%;
+        transition: width 0.25s ease;
+      }
+
+      /* Charts */
+      .chart-container {
+        width: 100%;
+        overflow-x: auto;
+        position: relative;
+      }
+
+      .chart-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+      }
+
+      .legend-color {
+        width: 11px;
+        height: 11px;
+        border-radius: 3px;
+        display: inline-block;
+        flex-shrink: 0;
+      }
+
+      /* Tables */
+      .table-wrap {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      table.data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+        min-width: 480px;
+      }
+
+      table.data-table th,
+      table.data-table td {
+        padding: 10px 8px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-hairline);
+      }
+
+      table.data-table th {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-muted);
+      }
+
+      /* Record List */
+      .record-item {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-hairline);
+        border-radius: 18px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .record-top {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .record-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      /* Forms & Settings Controls */
+      .setting-row {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border-hairline);
+      }
+
+      .setting-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .setting-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
+        height: 24px;
+      }
+
+      .toggle-switch {
+        position: relative;
+        width: 48px;
+        height: 28px;
+        border-radius: 999px;
+        background: #cbd5e1;
+        transition: background-color 0.2s ease;
+        flex-shrink: 0;
+        min-height: 28px;
+      }
+
+      .toggle-switch[aria-checked="true"] {
+        background: var(--accent);
+      }
+
+      .toggle-knob {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease;
+      }
+
+      .toggle-switch[aria-checked="true"] .toggle-knob {
+        transform: translateX(20px);
+      }
+
+      /* Modal Dialog */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .modal-backdrop.open {
+        display: flex;
+      }
+
+      .modal-panel {
+        width: 100%;
+        max-width: 460px;
+        max-height: 88vh;
+        overflow-y: auto;
+        background: var(--bg-surface);
+        border-radius: 22px;
+        padding: 22px;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+      }
+
+      .divider {
+        height: 1px;
+        background: var(--border-hairline);
+        width: 100%;
+      }
+
+      /* Responsive Desktop Breakpoints */
+      @media (min-width: 768px) {
+        .header-inner {
+          padding: 0 24px;
+        }
+        .desktop-nav {
+          display: flex;
+        }
+        .header-cta {
+          display: inline-flex;
+        }
+        .mobile-page-label {
+          display: none;
+        }
+        .bottom-nav {
+          display: none;
+        }
+        .main-content {
+          padding: 28px 24px 48px;
+        }
+        .home-hero {
+          grid-template-columns: 1.35fr 0.65fr;
+          padding: 28px 32px;
+        }
+        .grid-2 {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .grid-3 {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .grid-4 {
+          grid-template-columns: repeat(4, 1fr);
+        }
+        .state-breakdown-row {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="appShell" class="app-shell">
+      <!-- Top Bar (3-Zone Contract on Desktop, Compact Bar on Mobile) -->
+      <header class="top-header">
+        <div class="header-inner">
+          <button type="button" class="brand-btn" data-nav="home" aria-label="바른목ON 홈으로 이동">
+            <span class="brand-mark" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="7" y="2" width="10" height="20" rx="2.5"></rect>
+                <path d="M12 18h.01"></path>
+                <path d="M10 8l2-2 2 2"></path>
+              </svg>
+            </span>
+            <span>바른목ON</span>
+          </button>
+
+          <nav class="desktop-nav" aria-label="주요 메뉴">
+            <button type="button" class="desktop-nav-link active" data-nav="home">홈</button>
+            <button type="button" class="desktop-nav-link" data-nav="measure">실시간 측정</button>
+            <button type="button" class="desktop-nav-link" data-nav="analytics">분석</button>
+            <button type="button" class="desktop-nav-link" data-nav="history">기록</button>
+            <button type="button" class="desktop-nav-link" data-nav="settings">설정</button>
+          </nav>
+
+          <div class="header-actions" style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+            <span id="mobilePageLabel" class="mobile-page-label">홈</span>
+            <button type="button" class="btn btn-sm btn-primary header-cta" id="headerStartBtn">
+              측정 시작
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Workspace -->
+      <main class="main-content">
+        <!-- 1. HOME VIEW -->
+        <section id="view-home" class="view-panel active" aria-labelledby="homeHeading">
+          <div class="stack-lg">
+            <div class="card home-hero">
+              <div class="stack-md">
+                <p class="meta-line" id="homeDateLabel"></p>
+                <h1 id="homeHeading" class="hero-title">스마트폰 센서로 지키는 바른 자세 습관</h1>
+                <p class="body-text">
+                  바른목ON은 스마트폰의 가속도 센서와 자이로 센서로 기기 기울기와 움직임을 감지해 사용 자세를 추정하고, 오늘과 주간·월간 습관 변화를 기록합니다.
+                </p>
+                <div style="display:flex;flex-wrap:wrap;gap:10px;padding-top:4px;">
+                  <button type="button" class="btn btn-primary" id="homeStartBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polygon points="6 3 20 12 6 21 6 3"></polygon>
+                    </svg>
+                    <span>측정 시작하기</span>
+                  </button>
+                  <button type="button" class="btn btn-secondary" data-nav="analytics">자세 분석 보기</button>
+                  <button type="button" class="btn btn-secondary" data-nav="history">이전 기록 확인</button>
+                </div>
+              </div>
+              <div class="hero-illustration" aria-hidden="true">
+                <svg width="190" height="170" viewBox="0 0 200 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="100" cy="92" r="72" fill="#BAE6FD" fill-opacity="0.55" />
+                  <circle cx="100" cy="92" r="52" fill="#E0F2FE" />
+                  <!-- Friendly Posture Character & Phone -->
+                  <path d="M58 142C58 122 76 112 96 112C116 112 132 122 132 142" stroke="#0284C7" stroke-width="6" stroke-linecap="round" fill="#FFFFFF" />
+                  <circle cx="95" cy="82" r="24" fill="#FFFFFF" stroke="#0284C7" stroke-width="5" />
+                  <circle cx="88" cy="80" r="2.6" fill="#0F172A" />
+                  <circle cx="103" cy="80" r="2.6" fill="#0F172A" />
+                  <path d="M89 89C92 92 99 92 102 89" stroke="#0284C7" stroke-width="2.6" stroke-linecap="round" />
+                  <!-- Upright Phone & Angle Arc -->
+                  <g transform="translate(132, 62) rotate(-12)">
+                    <rect x="0" y="0" width="26" height="46" rx="6" fill="#0284C7" />
+                    <rect x="3" y="5" width="20" height="33" rx="3" fill="#E0F2FE" />
+                    <circle cx="13" cy="42" r="1.6" fill="#FFFFFF" />
+                  </g>
+                  <path d="M126 112C126 98 134 86 144 80" stroke="#0EA5E9" stroke-width="2.4" stroke-dasharray="4 4" stroke-linecap="round" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Environment Check Notice (Honest sensor availability info) -->
+            <div id="homeEnvNotice" class="notice-box info" style="display:none;"></div>
+
+            <!-- Today's Summary -->
+            <div class="card stack-md">
+              <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;">
+                <div>
+                  <h2 class="section-title">오늘의 자세 측정 요약</h2>
+                  <p class="meta-line" id="homeTodayMeta">오늘 저장된 실제 측정 기록을 집계합니다.</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-secondary" data-nav="settings">목표 시간 조정</button>
+              </div>
+
+              <div class="grid-4">
+                <div class="kpi-card">
+                  <span class="kpi-label">오늘 측정 시간</span>
+                  <span class="kpi-value tabular-nums" id="homeTodayTotal">0분 0초</span>
+                  <span class="kpi-sub tabular-nums" id="homeTodaySessions">0회 측정</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-label">안정권 유지 시간</span>
+                  <span class="kpi-value tabular-nums" id="homeTodaySafe" style="color:var(--safe-text);">0분 0초</span>
+                  <span class="kpi-sub tabular-nums" id="homeTodaySafeRate">기록 없음</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-label">오늘의 목표 달성</span>
+                  <span class="kpi-value tabular-nums" id="homeGoalProgressText">0%</span>
+                  <span class="kpi-sub tabular-nums" id="homeGoalTargetText">목표 30분</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-label">주의 이상 누적</span>
+                  <span class="kpi-value tabular-nums" id="homeTodayNonSafe">0분 0초</span>
+                  <span class="kpi-sub" id="homeTodayLastTime">최근 측정 없음</span>
+                </div>
+              </div>
+
+              <div class="stack-sm">
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8125rem;">
+                  <span style="font-weight:600;color:var(--text-secondary);">오늘 목표 진행률</span>
+                  <span class="tabular-nums" id="homeGoalBarLabel" style="color:var(--text-muted);">0분 / 30분</span>
+                </div>
+                <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="homeGoalBarWrap">
+                  <div class="progress-fill" id="homeGoalBarFill" style="width:0%;"></div>
+                </div>
+              </div>
+
+              <div id="homeTodayDistWrap" class="stack-sm" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8125rem;">
+                  <span style="font-weight:600;color:var(--text-secondary);">오늘 자세 상태 비율</span>
+                  <span class="meta-line tabular-nums" id="homeTodayDistMeta"></span>
+                </div>
+                <div class="mini-stack-bar" id="homeTodayStackBar"></div>
+              </div>
+            </div>
+
+            <!-- How it Works Quick Cards -->
+            <div class="grid-3">
+              <div class="card stack-sm">
+                <h3 class="card-title">1. 기준 자세 맞추기</h3>
+                <p class="body-text">사람마다 편한 손 위치가 다릅니다. 측정 전 바른 자세로 폰을 들고 기준 각도를 설정해 보세요.</p>
+              </div>
+              <div class="card stack-sm">
+                <h3 class="card-title">2. 실시간 기울기 감지</h3>
+                <p class="body-text">가속도·자이로 센서 데이터로 기울기를 안정적으로 추정해 4단계 색상과 안내를 보여줍니다.</p>
+              </div>
+              <div class="card stack-sm">
+                <h3 class="card-title">3. 기록 및 습관 분석</h3>
+                <p class="body-text">측정 종료 시 기록이 브라우저에 자동 저장되며, 주간·월간 변화와 맞춤 피드백을 제공합니다.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. LIVE MEASURE VIEW -->
+        <section id="view-measure" class="view-panel" aria-labelledby="measureStateTitle">
+          <div class="stack-md">
+            <!-- Sensor Permission / Error / Preview Banner -->
+            <div id="measureBanner" class="notice-box info" style="display:none;"></div>
+
+            <!-- Sustained Posture Alert -->
+            <div id="sustainedAlert" class="notice-box warn" style="display:none;" role="status" aria-live="polite">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;" aria-hidden="true">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <div class="stack-sm" style="gap:4px;">
+                <strong style="font-size:0.9375rem;">자세 유지 알림</strong>
+                <p id="sustainedAlertText" style="font-size:0.875rem;">기기가 기울어진 상태가 계속 유지되고 있어요. 잠깐 고개를 들고 어깨를 펴 보세요.</p>
+              </div>
+            </div>
+
+            <!-- Primary Live State Stage -->
+            <div id="measureStage" class="measure-stage stack-md">
+              <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;">
+                <span class="meta-line tabular-nums" id="measureSensorStatusText">센서 대기 중</span>
+                <span class="meta-line tabular-nums" id="measureBaselineText">기준 각도 55°</span>
+              </div>
+
+              <div class="grid-2" style="align-items:center;">
+                <!-- State Label + Message + Elapsed Clock -->
+                <div class="stack-md">
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <span id="measureStateIcon" aria-hidden="true" style="width:44px;height:44px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent-hover);flex-shrink:0;">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                        <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                        <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                      </svg>
+                    </span>
+                    <div>
+                      <p class="meta-line">현재 자세 추정 상태</p>
+                      <h1 id="measureStateTitle" class="measure-state-heading state-text-safe">측정 준비</h1>
+                    </div>
+                  </div>
+
+                  <p id="measureGuideMsg" class="body-text" style="font-size:1.0625rem;font-weight:600;color:var(--text-primary);">
+                    스마트폰을 평소처럼 편하게 들고 '측정 시작' 버튼을 눌러 센서 권한을 허용해 주세요.
+                  </p>
+
+                  <div>
+                    <p class="meta-line">실제 자세 측정 시간 (4단계 합계)</p>
+                    <p id="measureElapsedClock" class="elapsed-clock tabular-nums">00:00:00</p>
+                    <p id="measureSensorElapsedSub" class="meta-line tabular-nums" style="margin-top:2px;">전체 경과 시간 00:00:00</p>
+                  </div>
+                </div>
+
+                <!-- Real-Time Tilt & Gyroscope Visual Gauge -->
+                <div class="card-subtle tilt-gauge-wrap">
+                  <svg id="tiltGaugeSvg" width="210" height="145" viewBox="0 0 210 145" aria-label="스마트폰 실시간 기울기 게이지">
+                    <!-- Reference Arc -->
+                    <path d="M 35 115 A 70 70 0 0 1 175 115" fill="none" stroke="rgba(14, 116, 178, 0.16)" stroke-width="10" stroke-linecap="round" />
+                    <!-- Baseline Marker -->
+                    <line id="gaugeBaseLine" x1="105" y1="115" x2="105" y2="48" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4 4" />
+                    <!-- Current Tilt Needle -->
+                    <g id="gaugeNeedleGroup" transform="rotate(0 105 115)">
+                      <rect x="94" y="54" width="22" height="40" rx="5" fill="#0284c7" />
+                      <rect x="97" y="59" width="16" height="28" rx="2" fill="#e0f2fe" />
+                      <circle cx="105" cy="90" r="1.5" fill="#ffffff" />
+                    </g>
+                    <circle cx="105" cy="115" r="6" fill="#0f172a" />
+                    <text x="26" y="134" font-size="11" fill="#64748b" font-weight="600">0° 수평</text>
+                    <text x="92" y="134" font-size="11" fill="#64748b" font-weight="600">기준</text>
+                    <text x="155" y="134" font-size="11" fill="#64748b" font-weight="600">90°+ 숙임</text>
+                  </svg>
+
+                  <div style="width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
+                    <div>
+                      <div class="meta-line">기울기 편차</div>
+                      <div id="measureDeviationVal" class="tabular-nums" style="font-weight:800;font-size:1.0625rem;">--°</div>
+                    </div>
+                    <div>
+                      <div class="meta-line">기기 각도</div>
+                      <div id="measurePitchVal" class="tabular-nums" style="font-weight:800;font-size:1.0625rem;">--°</div>
+                    </div>
+                    <div>
+                      <div class="meta-line">회전 속도</div>
+                      <div id="measureGyroVal" class="tabular-nums" style="font-weight:800;font-size:1.0625rem;">--°/s</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Controls -->
+              <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                <button type="button" class="btn btn-primary" id="btnStartMeasure">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polygon points="6 3 20 12 6 21 6 3"></polygon>
+                  </svg>
+                  <span>측정 시작</span>
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnPauseMeasure" style="display:none;">일시정지</button>
+                <button type="button" class="btn btn-secondary" id="btnCalibrate" disabled>현재 자세를 기준(0°)으로 설정</button>
+                <button type="button" class="btn btn-secondary" id="btnTogglePip" style="display:none;">다른 앱 위 미니 창(PiP)</button>
+                <button type="button" class="btn btn-secondary" id="btnToggleMiniMode" style="display:none;">분할·팝업 미니 뷰</button>
+                <button type="button" class="btn btn-danger" id="btnStopMeasure" style="display:none;">측정 중지 및 저장</button>
+              </div>
+
+              <!-- Multi-App Simultaneous Measurement Guide -->
+              <div id="multiAppGuideBox" class="card-subtle" style="padding:12px 14px;font-size:0.8125rem;color:var(--text-secondary);line-height:1.55;">
+                <strong style="color:var(--text-primary);display:block;margin-bottom:4px;">다른 앱을 쓰면서 실제 기울기·4단계까지 측정하는 방법</strong>
+                스마트폰 OS(Android·iOS) 보안 정책상 브라우저가 화면에서 완전히 가려지면 하드웨어 센서가 자동 차단됩니다. 다른 앱 사용 중에도 실제 기울기와 4단계 시간을 측정하려면 <strong>[다른 앱 위 미니 창(PiP)]</strong>을 켜거나, 스마트폰의 <strong>분할 화면·팝업 화면</strong>으로 이 앱을 작게 띄운 뒤 <strong>[분할·팝업 미니 뷰]</strong>를 눌러 사용해 주세요.
+              </div>
+            </div>
+
+            <!-- Per-State Cumulative Durations -->
+            <div class="state-breakdown-row">
+              <div class="state-stat-box">
+                <div class="state-stat-head">
+                  <span><span class="state-swatch" style="background:var(--safe-bar);"></span>안정권</span>
+                  <span class="tabular-nums meta-line" id="countSafe">0회</span>
+                </div>
+                <div class="tabular-nums" id="timeSafe" style="font-size:1.25rem;font-weight:800;color:var(--safe-text);">00:00</div>
+              </div>
+              <div class="state-stat-box">
+                <div class="state-stat-head">
+                  <span><span class="state-swatch" style="background:var(--caution-bar);"></span>주의 단계</span>
+                  <span class="tabular-nums meta-line" id="countCaution">0회</span>
+                </div>
+                <div class="tabular-nums" id="timeCaution" style="font-size:1.25rem;font-weight:800;color:var(--caution-text);">00:00</div>
+              </div>
+              <div class="state-stat-box">
+                <div class="state-stat-head">
+                  <span><span class="state-swatch" style="background:var(--warning-bar);"></span>경고 단계</span>
+                  <span class="tabular-nums meta-line" id="countWarning">0회</span>
+                </div>
+                <div class="tabular-nums" id="timeWarning" style="font-size:1.25rem;font-weight:800;color:var(--warning-text);">00:00</div>
+              </div>
+              <div class="state-stat-box">
+                <div class="state-stat-head">
+                  <span><span class="state-swatch" style="background:var(--danger-bar);"></span>위험 단계</span>
+                  <span class="tabular-nums meta-line" id="countDanger">0회</span>
+                </div>
+                <div class="tabular-nums" id="timeDanger" style="font-size:1.25rem;font-weight:800;color:var(--danger-text);">00:00</div>
+              </div>
+            </div>
+
+            <!-- Honest OS-Blocked Background Gap Row -->
+            <div id="unmeasuredGapCard" class="card-subtle" style="display:none;padding:12px 14px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                <div>
+                  <div style="font-size:0.875rem;font-weight:700;color:var(--text-primary);">다른 앱 사용 중 센서 미수신 (OS 보안 제한)</div>
+                  <div class="meta-line" style="margin-top:2px;">화면이 완전히 가려진 동안 OS가 센서를 차단해 4단계 기록에는 가짜 값을 넣지 않았습니다. (실제 측정 + 미수신 = 전체 경과)</div>
+                </div>
+                <div class="tabular-nums" id="timeUnmeasured" style="font-size:1.125rem;font-weight:800;color:var(--text-secondary);">00:00</div>
+              </div>
+            </div>
+
+            <!-- Real Sensor Verification Panel -->
+            <div id="rawSensorVerifyCard" class="card stack-sm">
+              <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;">
+                <h2 class="card-title">실제 센서 수신 데이터 확인</h2>
+                <span class="meta-line tabular-nums" id="sensorRateLabel">수신 횟수: 0회 (0 Hz)</span>
+              </div>
+              <p class="meta-line">
+                실제 기기에서 들어오는 가속도(중력 포함, m/s²) 및 자이로 회전 속도(°/s) 원본 값입니다. 값이 실시간으로 변하면 센서가 정상 작동 중입니다.
+              </p>
+              <div class="grid-2" style="gap:10px;">
+                <div class="card-subtle">
+                  <div class="meta-line">가속도 센서 (Accelerometer)</div>
+                  <div class="tabular-nums" id="rawAccelText" style="font-weight:700;font-size:0.875rem;margin-top:4px;">X: -- · Y: -- · Z: --</div>
+                </div>
+                <div class="card-subtle">
+                  <div class="meta-line">자이로 센서 (Gyroscope) · 방향각</div>
+                  <div class="tabular-nums" id="rawGyroText" style="font-weight:700;font-size:0.875rem;margin-top:4px;">α: -- · β: -- · γ: --</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Last Saved Session Summary Card -->
+            <div id="measureSavedNotice" class="card stack-sm" style="display:none;">
+              <h2 class="section-title">측정이 저장되었습니다</h2>
+              <p id="measureSavedSummary" class="body-text"></p>
+              <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                <button type="button" class="btn btn-sm btn-primary" data-nav="analytics">주간·월간 분석 보기</button>
+                <button type="button" class="btn btn-sm btn-secondary" data-nav="history">저장된 기록 보기</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. ANALYTICS VIEW -->
+        <section id="view-analytics" class="view-panel" aria-labelledby="analyticsHeading">
+          <div class="stack-lg">
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;">
+              <div>
+                <h1 id="analyticsHeading" class="section-title" style="font-size:1.35rem;">자세 변화 분석</h1>
+                <p class="meta-line" id="analyticsPeriodDesc">저장된 실제 측정 기록을 바탕으로 통계를 계산합니다.</p>
+              </div>
+              <div class="segmented" role="tablist" aria-label="분석 기간 선택">
+                <button type="button" class="segmented-btn active" id="tabWeekly" role="tab" aria-selected="true">주간 분석 (7일)</button>
+                <button type="button" class="segmented-btn" id="tabMonthly" role="tab" aria-selected="false">월간 분석 (30일)</button>
+              </div>
+            </div>
+
+            <!-- 4 KPI Cards -->
+            <div class="grid-4">
+              <div class="kpi-card">
+                <span class="kpi-label" id="kpiTotalLabel">주간 총 측정 시간</span>
+                <span class="kpi-value tabular-nums" id="anaTotalTime">0분</span>
+                <span class="kpi-sub tabular-nums" id="anaSessionCount">0회 측정</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">안정권 유지 시간</span>
+                <span class="kpi-value tabular-nums" id="anaSafeTime" style="color:var(--safe-text);">0분</span>
+                <span class="kpi-sub" id="anaMeasuredDays">기록된 날 0일</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">안정권 유지 비율</span>
+                <span class="kpi-value tabular-nums" id="anaSafeRatio">기록 없음</span>
+                <span class="kpi-sub" id="anaDominantState">측정 기록 필요</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">이전 기간 대비 변화</span>
+                <span class="kpi-value tabular-nums" id="anaDeltaRatio">-</span>
+                <span class="kpi-sub" id="anaDeltaDesc">이전 기간 기록 없음</span>
+              </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="grid-2">
+              <!-- Bar Chart -->
+              <div class="card stack-md">
+                <div>
+                  <h2 class="section-title" id="barChartTitle">최근 7일 날짜별 측정 시간</h2>
+                  <p class="meta-line" id="barChartSub">기록이 없는 날짜는 '기록 없음'으로 표시됩니다.</p>
+                </div>
+                <div class="chart-container">
+                  <svg id="barChartSvg" viewBox="0 0 520 240" style="width:100%;height:auto;min-width:300px;display:block;" role="img" aria-label="기간별 측정 시간 막대 그래프"></svg>
+                </div>
+                <div id="barChartTooltip" class="card-subtle meta-line tabular-nums" style="min-height:42px;display:flex;align-items:center;">
+                  막대를 누르거나 마우스를 올리면 정확한 측정 수치가 표시됩니다.
+                </div>
+                <div class="chart-legend">
+                  <span class="legend-item"><span class="legend-color" style="background:var(--safe-bar);"></span>안정권</span>
+                  <span class="legend-item"><span class="legend-color" style="background:var(--caution-bar);"></span>주의</span>
+                  <span class="legend-item"><span class="legend-color" style="background:var(--warning-bar);"></span>경고</span>
+                  <span class="legend-item"><span class="legend-color" style="background:var(--danger-bar);"></span>위험</span>
+                </div>
+              </div>
+
+              <!-- Donut Chart -->
+              <div class="card stack-md">
+                <div>
+                  <h2 class="section-title">자세 상태별 비율</h2>
+                  <p class="meta-line">선택한 기간 동안 각 자세 단계가 차지한 시간과 비율입니다.</p>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:20px;">
+                  <svg id="donutChartSvg" width="188" height="188" viewBox="0 0 188 188" role="img" aria-label="자세 상태별 비율 원형 그래프"></svg>
+                  <div id="donutLegendList" class="stack-sm" style="flex:1;min-width:170px;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Personalized Feedback -->
+            <div class="card stack-md">
+              <div>
+                <h2 class="section-title">맞춤형 자세 습관 피드백</h2>
+                <p class="meta-line">실제 저장된 측정 데이터를 바탕으로 생성된 안내입니다.</p>
+              </div>
+              <div id="feedbackList" class="stack-sm"></div>
+            </div>
+
+            <!-- Breakdown Table -->
+            <div class="card stack-md">
+              <h2 class="section-title" id="analyticsTableTitle">날짜별 상세 기록표</h2>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead id="analyticsTableHead"></thead>
+                  <tbody id="analyticsTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. HISTORY VIEW -->
+        <section id="view-history" class="view-panel" aria-labelledby="historyHeading">
+          <div class="stack-lg">
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;">
+              <div>
+                <h1 id="historyHeading" class="section-title" style="font-size:1.35rem;">측정 기록</h1>
+                <p class="meta-line" id="historyCountMeta">저장된 기록 0건</p>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+                <input type="date" id="historyDateFilter" aria-label="날짜 필터" style="min-height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--border-strong);background:var(--bg-surface);font-size:0.875rem;" />
+                <button type="button" class="btn btn-sm btn-secondary" id="historyClearFilterBtn" style="display:none;">전체 보기</button>
+                <button type="button" class="btn btn-sm btn-ghost-danger" id="historyDeleteAllBtn">전체 삭제</button>
+              </div>
+            </div>
+
+            <div id="historyListContainer" class="stack-md"></div>
+          </div>
+        </section>
+
+        <!-- 5. SETTINGS VIEW -->
+        <section id="view-settings" class="view-panel" aria-labelledby="settingsHeading">
+          <div class="stack-lg">
+            <div>
+              <h1 id="settingsHeading" class="section-title" style="font-size:1.35rem;">설정 및 안내</h1>
+              <p class="meta-line">센서 기준값 조정, 권한 상태 확인, 데이터 관리 기능을 제공합니다.</p>
+            </div>
+
+            <div class="grid-2">
+              <!-- Thresholds & Daily Goal -->
+              <div class="card stack-sm">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                  <h2 class="section-title">목표 및 자세 기준 설정</h2>
+                  <button type="button" class="btn btn-sm btn-secondary" id="btnResetSettings">기본값 복원</button>
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-head">
+                    <label for="setDailyGoal" style="font-weight:600;">오늘의 측정 목표 시간</label>
+                    <span class="tabular-nums" id="valDailyGoal" style="font-weight:700;color:var(--accent-hover);">30분</span>
+                  </div>
+                  <input type="range" id="setDailyGoal" min="10" max="120" step="5" value="30" />
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-head">
+                    <label for="setSafeMax" style="font-weight:600;">안정권 허용 편차 (하늘색)</label>
+                    <span class="tabular-nums" id="valSafeMax" style="font-weight:700;color:var(--safe-text);">±12° 이하</span>
+                  </div>
+                  <input type="range" id="setSafeMax" min="6" max="20" step="1" value="12" />
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-head">
+                    <label for="setCautionMax" style="font-weight:600;">주의 단계 상한 (초록색)</label>
+                    <span class="tabular-nums" id="valCautionMax" style="font-weight:700;color:var(--caution-text);">±22° 이하</span>
+                  </div>
+                  <input type="range" id="setCautionMax" min="14" max="32" step="1" value="22" />
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-head">
+                    <label for="setWarningMax" style="font-weight:600;">경고 단계 상한 (노란색)</label>
+                    <span class="tabular-nums" id="valWarningMax" style="font-weight:700;color:var(--warning-text);">±34° 이하</span>
+                  </div>
+                  <input type="range" id="setWarningMax" min="24" max="48" step="1" value="34" />
+                  <p class="meta-line">이 범위를 초과하면 위험 단계(빨간색)로 분류됩니다.</p>
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-head">
+                    <label for="setHysteresis" style="font-weight:600;">상태 전환 안정화 대기 시간</label>
+                    <span class="tabular-nums" id="valHysteresis" style="font-weight:700;">1.5초</span>
+                  </div>
+                  <input type="range" id="setHysteresis" min="500" max="3000" step="250" value="1500" />
+                  <p class="meta-line">순간적인 손 흔들림으로 배경색이 깜빡이지 않도록 일정 시간 유지 시에만 단계를 바꿉니다.</p>
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-head">
+                    <label for="setAlertSec" style="font-weight:600;">자세 유지 알림 기준 시간</label>
+                    <span class="tabular-nums" id="valAlertSec" style="font-weight:700;">15초</span>
+                  </div>
+                  <input type="range" id="setAlertSec" min="10" max="60" step="5" value="15" />
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-head">
+                    <div>
+                      <div style="font-weight:600;">알림 진동 사용 (지원 기기)</div>
+                      <p class="meta-line">경고·위험 상태가 오래 지속될 때 가벼운 진동 안내</p>
+                    </div>
+                    <button type="button" class="toggle-switch" id="toggleVibration" role="switch" aria-checked="true" aria-label="알림 진동 사용">
+                      <span class="toggle-knob"></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sensor Diagnostics & Info -->
+              <div class="stack-md">
+                <div class="card stack-md">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                    <h2 class="section-title">센서 권한 및 실행 환경 진단</h2>
+                    <button type="button" class="btn btn-sm btn-primary" id="btnTestSensorDiag">센서 확인</button>
+                  </div>
+                  <div id="diagGrid" class="stack-sm"></div>
+                  <p id="diagResultMsg" class="meta-line"></p>
+                </div>
+
+                <div class="card stack-sm">
+                  <h2 class="section-title">데이터 저장 및 기록 초기화</h2>
+                  <p class="body-text">
+                    모든 측정 기록과 기준 설정은 브라우저의 <strong>localStorage</strong>에 기기 내부 전용으로 저장됩니다. 새로고침하거나 앱을 다시 열어도 기록이 유지되며, 외부 서버로 전송되지 않습니다.
+                  </p>
+                  <div style="padding-top:6px;">
+                    <button type="button" class="btn btn-sm btn-ghost-danger" id="btnSettingsDeleteAll">전체 측정 기록 초기화</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Measurement Principles & User Guide -->
+            <div class="grid-2">
+              <div class="card stack-sm">
+                <h2 class="section-title">자세 측정 기준 및 한계 안내</h2>
+                <p class="body-text">
+                  스마트폰의 <strong>가속도 센서</strong>는 중력 방향과 움직임을, <strong>자이로 센서</strong>는 기기의 회전 속도를 측정합니다. 두 센서 데이터를 결합해 기기 기울기 변화를 계산하지만, 스마트폰 센서만으로는 사용자의 실제 목뼈 각도나 거북목 여부를 직접 진단할 수 없습니다.
+                </p>
+                <p class="body-text">
+                  따라서 바른목ON은 사용자가 기준 자세로 들었을 때의 기울기 대비 기기가 얼마나 아래·위·옆으로 기울어졌는지를 바탕으로 <strong>자세를 추정</strong>하여 올바른 사용 습관을 돕는 참고 도구입니다.
+                </p>
+              </div>
+
+              <div class="card stack-sm">
+                <h2 class="section-title">바른목ON 사용 방법</h2>
+                <ol style="padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:0.9375rem;color:var(--text-secondary);">
+                  <li>모바일 브라우저(Chrome 또는 Safari)에서 <strong>HTTPS 주소</strong>로 접속합니다.</li>
+                  <li><strong>측정 시작</strong> 버튼을 눌러 센서 접근 권한(iOS의 경우 동작 및 방향 접근)을 허용합니다.</li>
+                  <li>허리를 펴고 스마트폰을 눈높이 가까이 편하게 든 뒤 <strong>기준(0°) 설정</strong>을 누릅니다.</li>
+                  <li>측정이 끝나면 <strong>측정 중지 및 저장</strong>을 눌러 기록을 보관하고 분석 화면에서 변화를 확인합니다.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Mobile Bottom Tab Bar -->
+      <nav class="bottom-nav" aria-label="모바일 하단 메뉴">
+        <button type="button" class="bottom-nav-btn active" data-nav="home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>홈</span>
+        </button>
+        <button type="button" class="bottom-nav-btn" data-nav="measure">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <polyline points="12 7 12 12 15 15"></polyline>
+          </svg>
+          <span>측정</span>
+        </button>
+        <button type="button" class="bottom-nav-btn" data-nav="analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span>분석</span>
+        </button>
+        <button type="button" class="bottom-nav-btn" data-nav="history">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>기록</span>
+        </button>
+        <button type="button" class="bottom-nav-btn" data-nav="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09c-.66 0-1.25.4-1.51 1z"></path>
+          </svg>
+          <span>설정</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Custom Accessible Modal (Detail / Confirm) -->
+    <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-panel stack-md">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+          <h2 id="modalTitle" class="section-title">확인</h2>
+          <button type="button" id="modalCloseBtn" class="btn btn-sm btn-secondary" aria-label="창 닫기">닫기</button>
+        </div>
+        <div id="modalBody" class="stack-sm"></div>
+        <div id="modalFooter" style="display:flex;justify-content:flex-end;gap:10px;padding-top:4px;"></div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        'use strict';
+
+        /* =========================================================
+         * 1. CONSTANTS, STORAGE KEYS & POSTURE DEFINITIONS
+         * ========================================================= */
+        const STORAGE_RECORDS_KEY = 'barunmok_records_v1';
+        const STORAGE_SETTINGS_KEY = 'barunmok_settings_v1';
+        const STORAGE_ACTIVE_SESSION_KEY = 'barunmok_active_session_v1';
+
+        const DEFAULT_SETTINGS = {
+          dailyGoalMinutes: 30,
+          safeMaxDeg: 12,
+          cautionMaxDeg: 22,
+          warningMaxDeg: 34,
+          hysteresisMs: 1500,
+          alertHoldSec: 15,
+          vibrationEnabled: true,
+          baselinePitch: 55
+        };
+
+        const STATES = {
+          safe: {
+            key: 'safe',
+            label: '안정권',
+            colorName: '하늘색',
+            barColor: '#0ea5e9',
+            textClass: 'state-text-safe',
+            message: '좋아요! 지금처럼 편안한 자세를 유지해 보세요.'
+          },
+          caution: {
+            key: 'caution',
+            label: '주의 단계',
+            colorName: '초록색',
+            barColor: '#22c55e',
+            textClass: 'state-text-caution',
+            message: '조금 기울어졌어요. 자세를 한 번 확인해 보세요.'
+          },
+          warning: {
+            key: 'warning',
+            label: '경고 단계',
+            colorName: '노란색',
+            barColor: '#eab308',
+            textClass: 'state-text-warning',
+            message: '고개를 숙이거나 기기가 기울어졌을 수 있어요. 자세를 바꿔 보세요.'
+          },
+          danger: {
+            key: 'danger',
+            label: '위험 단계',
+            colorName: '빨간색',
+            barColor: '#ef4444',
+            textClass: 'state-text-danger',
+            message: '자세를 다시 확인하고 잠시 휴식을 취해 보세요.'
+          }
+        };
+
+        const STATE_ORDER = ['safe', 'caution', 'warning', 'danger'];
+
+        /* =========================================================
+         * 2. STATE MANAGEMENT & LOCALSTORAGE
+         * ========================================================= */
+        let settings = loadSettings();
+        let records = loadRecords();
+        let currentRoute = 'home';
+        let analyticsPeriod = 'weekly'; // 'weekly' | 'monthly'
+        let historyDateFilter = '';
+
+        // Live Measurement Session State
+        const session = {
+          status: 'idle', // 'idle' | 'requesting' | 'running' | 'paused'
+          listenersActive: false,
+          motionHandler: null,
+          orientHandler: null,
+          orientAbsHandler: null,
+          accelSensor: null,
+          gyroSensor: null,
+          wakeLock: null,
+          wakeLockRequesting: false,
+          keepAliveAudio: null,
+          keepAliveAudioUrl: null,
+          keepAliveCtx: null,
+          keepAliveUnlockHandler: null,
+          tickWorker: null,
+          reviveTimer: null,
+          reviveTimer2: null,
+          lastReviveAt: 0,
+          lastForegroundHandleAt: 0,
+          needsIOSRegrant: false,
+          iosRegrantHandler: null,
+          pipActive: false,
+          pipCanvas: null,
+          pipVideo: null,
+          pipStream: null,
+          miniMode: false,
+          usingGenericAccel: false,
+          genericPermissionError: false,
+          emptyEventCount: 0,
+          tickTimer: null,
+          noDataTimer: null,
+          startTime: 0,
+          manualPausedMs: 0,
+          pausedStartedWallAt: 0,
+          lastTickAt: 0,
+          lastTickWallAt: 0,
+          lastAccumWallAt: 0,
+          lastSensorAt: 0,
+          lastSensorWallAt: 0,
+          lastNativeMotionWallAt: 0,
+          lastGenericAccelWallAt: 0,
+          lastCheckpointAt: 0,
+          sensorCount: 0,
+          backgroundPacketCount: 0,
+          rateSampleCount: 0,
+          rateWindowStart: 0,
+          currentHz: 0,
+          hasMotionData: false,
+          hasNativeMotion: false,
+          hasOrientData: false,
+          filteredPitch: null,
+          filteredRoll: 0,
+          latestRawPitch: null,
+          gyroSpeed: 0,
+          rawAccel: { x: null, y: null, z: null },
+          rawGyro: { alpha: null, beta: null, gamma: null },
+          rawOrient: { beta: null, gamma: null },
+          activeState: 'safe',
+          candidateState: 'safe',
+          candidateSince: 0,
+          badPostureSince: 0,
+          lastVibratedAt: 0,
+          totalMs: 0,
+          durationsMs: { safe: 0, caution: 0, warning: 0, danger: 0 },
+          counts: { safe: 0, caution: 0, warning: 0, danger: 0 },
+          maxDeviation: 0,
+          hiddenSinceWall: 0,
+          backgroundMeasuredMs: 0,
+          osSuspendedMs: 0,
+          pausedByBackground: false
+        };
+
+        function loadSettings() {
+          try {
+            const raw = localStorage.getItem(STORAGE_SETTINGS_KEY);
+            if (!raw) return Object.assign({}, DEFAULT_SETTINGS);
+            const parsed = JSON.parse(raw);
+            return Object.assign({}, DEFAULT_SETTINGS, parsed);
+          } catch (e) {
+            return Object.assign({}, DEFAULT_SETTINGS);
+          }
+        }
+
+        function saveSettings() {
+          try {
+            localStorage.setItem(STORAGE_SETTINGS_KEY, JSON.stringify(settings));
+          } catch (e) {
+            // ignore storage quota errors gracefully
+          }
+        }
+
+        function loadRecords() {
+          try {
+            const raw = localStorage.getItem(STORAGE_RECORDS_KEY);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) return [];
+            return parsed.filter(function (r) {
+              return r && typeof r.id === 'string' && typeof r.totalMs === 'number' && r.durationsMs;
+            });
+          } catch (e) {
+            return [];
+          }
+        }
+
+        function saveRecords() {
+          try {
+            localStorage.setItem(STORAGE_RECORDS_KEY, JSON.stringify(records));
+          } catch (e) {
+            // ignore storage quota errors gracefully
+          }
+        }
+
+        /* =========================================================
+         * 3. DATE & FORMATTING HELPERS
+         * ========================================================= */
+        function toLocalDateKey(ts) {
+          const d = new Date(ts);
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return y + '-' + m + '-' + day;
+        }
+
+        function formatDateKorean(dateKey) {
+          const parts = dateKey.split('-');
+          if (parts.length !== 3) return dateKey;
+          return parts[0] + '년 ' + Number(parts[1]) + '월 ' + Number(parts[2]) + '일';
+        }
+
+        function formatShortDay(dateKey) {
+          const parts = dateKey.split('-');
+          const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+          const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+          return Number(parts[1]) + '/' + Number(parts[2]) + ' (' + weekdays[d.getDay()] + ')';
+        }
+
+        function formatClock(ts) {
+          const d = new Date(ts);
+          return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        }
+
+        function formatHMS(ms) {
+          const safeMs = typeof ms === 'number' && Number.isFinite(ms) ? ms : 0;
+          const totalSec = Math.max(0, Math.floor(safeMs / 1000));
+          const h = Math.floor(totalSec / 3600);
+          const m = Math.floor((totalSec % 3600) / 60);
+          const s = totalSec % 60;
+          return (
+            String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0')
+          );
+        }
+
+        function formatMS(ms) {
+          const safeMs = typeof ms === 'number' && Number.isFinite(ms) ? ms : 0;
+          const totalSec = Math.max(0, Math.floor(safeMs / 1000));
+          const m = Math.floor(totalSec / 60);
+          const s = totalSec % 60;
+          return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+
+        function formatHumanDuration(ms) {
+          const safeMs = typeof ms === 'number' && Number.isFinite(ms) ? ms : 0;
+          const totalSec = Math.max(0, Math.round(safeMs / 1000));
+          if (totalSec === 0) return '0분 0초';
+          const h = Math.floor(totalSec / 3600);
+          const m = Math.floor((totalSec % 3600) / 60);
+          const s = totalSec % 60;
+          if (h > 0) return h + '시간 ' + m + '분';
+          if (m > 0) return m + '분 ' + s + '초';
+          return s + '초';
+        }
+
+        function formatMinutesOnly(ms) {
+          const totalSec = Math.max(0, Math.round(ms / 1000));
+          if (totalSec === 0) return '0분';
+          if (totalSec < 60) return totalSec + '초';
+          const m = Math.floor(totalSec / 60);
+          const h = Math.floor(m / 60);
+          const remM = m % 60;
+          if (h > 0) return h + '시간 ' + remM + '분';
+          return m + '분';
+        }
+
+        function getRecentDateKeys(daysCount, offsetDays) {
+          const offset = offsetDays || 0;
+          const keys = [];
+          const now = new Date();
+          for (let i = daysCount - 1; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i - offset);
+            keys.push(toLocalDateKey(d.getTime()));
+          }
+          return keys;
+        }
+
+        /* =========================================================
+         * 4. NAVIGATION & ROUTING
+         * ========================================================= */
+        const ROUTE_NAMES = {
+          home: '홈',
+          measure: '실시간 측정',
+          analytics: '분석',
+          history: '기록',
+          settings: '설정'
+        };
+
+        function navigateTo(route) {
+          if (!ROUTE_NAMES[route]) return;
+          currentRoute = route;
+
+          document.querySelectorAll('.view-panel').forEach(function (el) {
+            el.classList.toggle('active', el.id === 'view-' + route);
+          });
+
+          document.querySelectorAll('[data-nav]').forEach(function (btn) {
+            btn.classList.toggle('active', btn.getAttribute('data-nav') === route);
+          });
+
+          document.getElementById('mobilePageLabel').textContent = ROUTE_NAMES[route];
+
+          // Apply posture color background only when actively measuring on measure screen
+          syncBackgroundTheme();
+
+          if (route === 'home') renderHome();
+          if (route === 'measure') renderMeasureStaticUI();
+          if (route === 'analytics') renderAnalytics();
+          if (route === 'history') renderHistory();
+          if (route === 'settings') renderSettings();
+
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        }
+
+        function syncBackgroundTheme() {
+          const shell = document.getElementById('appShell');
+          shell.classList.remove('state-safe', 'state-caution', 'state-warning', 'state-danger');
+          if (currentRoute === 'measure' && session.status === 'running' && (session.hasMotionData || session.hasOrientData)) {
+            shell.classList.add('state-' + session.activeState);
+          }
+        }
+
+        /* =========================================================
+         * 5. ENVIRONMENT DETECTION & REAL SENSOR ENGINE
+         * ========================================================= */
+        function saveActiveCheckpoint() {
+          if (session.status !== 'running' && session.status !== 'paused') return;
+          try {
+            localStorage.setItem(
+              STORAGE_ACTIVE_SESSION_KEY,
+              JSON.stringify({
+                wasRunning: session.status === 'running',
+                startTime: session.startTime,
+                savedAt: Date.now(),
+                manualPausedMs: session.manualPausedMs || 0,
+                pausedStartedWallAt: session.pausedStartedWallAt || 0,
+                totalMs: session.totalMs,
+                durationsMs: session.durationsMs,
+                counts: session.counts,
+                maxDeviation: session.maxDeviation,
+                activeState: session.activeState,
+                baselinePitch: Math.round(settings.baselinePitch),
+                osSuspendedMs: session.osSuspendedMs || 0,
+                backgroundMeasuredMs: session.backgroundMeasuredMs || 0,
+                hasRealData: Boolean(session.hasMotionData || session.hasOrientData)
+              })
+            );
+          } catch (e) {}
+        }
+
+        function clearActiveCheckpoint() {
+          try {
+            localStorage.removeItem(STORAGE_ACTIVE_SESSION_KEY);
+          } catch (e) {}
+        }
+
+        function loadActiveCheckpoint() {
+          try {
+            const raw = localStorage.getItem(STORAGE_ACTIVE_SESSION_KEY);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed.totalMs !== 'number') return null;
+            // Discard stale checkpoints older than 24 hours
+            const lastActivity = parsed.savedAt || parsed.startTime || 0;
+            if (lastActivity > 0 && Date.now() - lastActivity > 86400000) {
+              clearActiveCheckpoint();
+              return null;
+            }
+            if (!parsed.wasRunning && parsed.totalMs < 1000) return null;
+            return parsed;
+          } catch (e) {
+            return null;
+          }
+        }
+
+        async function acquireWakeLock() {
+          if (!('wakeLock' in navigator) || !navigator.wakeLock || typeof navigator.wakeLock.request !== 'function') {
+            return;
+          }
+          if (session.status !== 'running' || document.visibilityState !== 'visible') {
+            return;
+          }
+          if ((session.wakeLock && !session.wakeLock.released) || session.wakeLockRequesting) {
+            return;
+          }
+          session.wakeLockRequesting = true;
+          try {
+            const lock = await navigator.wakeLock.request('screen');
+            if (session.status !== 'running' || document.visibilityState !== 'visible') {
+              try {
+                await lock.release();
+              } catch (e) {}
+              session.wakeLock = null;
+              return;
+            }
+            session.wakeLock = lock;
+            lock.addEventListener('release', function () {
+              if (session.wakeLock === lock) {
+                session.wakeLock = null;
+              }
+            });
+          } catch (e) {
+            // Wake lock may be denied in low battery or iframe; ignore gracefully
+          } finally {
+            session.wakeLockRequesting = false;
+          }
+        }
+
+        async function releaseWakeLock() {
+          const lock = session.wakeLock;
+          session.wakeLock = null;
+          if (lock) {
+            try {
+              await lock.release();
+            } catch (e) {}
+          }
+        }
+
+        function createSilentWavUrl() {
+          if (session.keepAliveAudioUrl) return session.keepAliveAudioUrl;
+          try {
+            const sampleRate = 8000;
+            const numSamples = sampleRate; // 1 second silent 8-bit mono PCM
+            const buffer = new ArrayBuffer(44 + numSamples);
+            const view = new DataView(buffer);
+            const writeStr = function (offset, str) {
+              for (let i = 0; i < str.length; i++) {
+                view.setUint8(offset + i, str.charCodeAt(i));
+              }
+            };
+            writeStr(0, 'RIFF');
+            view.setUint32(4, 36 + numSamples, true);
+            writeStr(8, 'WAVE');
+            writeStr(12, 'fmt ');
+            view.setUint32(16, 16, true); // PCM chunk size
+            view.setUint16(20, 1, true); // AudioFormat = PCM
+            view.setUint16(22, 1, true); // NumChannels = 1
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate, true); // ByteRate
+            view.setUint16(32, 1, true); // BlockAlign
+            view.setUint16(34, 8, true); // BitsPerSample
+            writeStr(36, 'data');
+            view.setUint32(40, numSamples, true);
+            for (let i = 44; i < 44 + numSamples; i++) {
+              view.setUint8(i, 128); // Unsigned 8-bit zero-amplitude silence
+            }
+            const blob = new Blob([buffer], { type: 'audio/wav' });
+            session.keepAliveAudioUrl = URL.createObjectURL(blob);
+            return session.keepAliveAudioUrl;
+          } catch (e) {
+            return null;
+          }
+        }
+
+        function clearKeepAliveUnlockHandler() {
+          if (session.keepAliveUnlockHandler) {
+            document.removeEventListener('pointerdown', session.keepAliveUnlockHandler, true);
+            session.keepAliveUnlockHandler = null;
+          }
+        }
+
+        function startBackgroundKeepAlive() {
+          if (session.status !== 'running') return;
+          clearKeepAliveUnlockHandler();
+
+          // 1. Silent HTML5 Audio loop (keeps mobile browser renderer process & workers unthrottled in background)
+          try {
+            if (!session.keepAliveAudio) {
+              const audio = document.createElement('audio');
+              audio.setAttribute('playsinline', '');
+              audio.setAttribute('webkit-playsinline', '');
+              audio.loop = true;
+              audio.muted = false;
+              audio.volume = 0.01;
+              audio.preload = 'auto';
+              const wavUrl = createSilentWavUrl();
+              if (wavUrl) {
+                audio.src = wavUrl;
+              }
+              session.keepAliveAudio = audio;
+            }
+            if (session.keepAliveAudio && session.keepAliveAudio.paused && session.keepAliveAudio.src) {
+              const p = session.keepAliveAudio.play();
+              if (p && typeof p.catch === 'function') {
+                p.catch(function () {
+                  // Autoplay blocked (e.g., auto-restored session before user tap); arm on next tap
+                  if (!session.keepAliveUnlockHandler && session.status === 'running') {
+                    const unlock = function () {
+                      clearKeepAliveUnlockHandler();
+                      if (session.status === 'running') {
+                        startBackgroundKeepAlive();
+                      }
+                    };
+                    session.keepAliveUnlockHandler = unlock;
+                    document.addEventListener('pointerdown', unlock, true);
+                  }
+                });
+              }
+            }
+          } catch (e) {}
+
+          // 2. Redundant silent Web Audio API context
+          try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+              if (!session.keepAliveCtx) {
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.frequency.value = 1;
+                gain.gain.value = 0.00001;
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                session.keepAliveCtx = ctx;
+              }
+              if (session.keepAliveCtx && session.keepAliveCtx.state === 'suspended') {
+                session.keepAliveCtx.resume().catch(function () {});
+              }
+            }
+          } catch (e) {}
+
+          // 3. MediaSession metadata so OS recognizes active session when screen locks or switching apps
+          try {
+            if ('mediaSession' in navigator && navigator.mediaSession) {
+              if (typeof MediaMetadata !== 'undefined' && !navigator.mediaSession.metadata) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                  title: '바른목ON 자세 측정 중',
+                  artist: '실시간 자세 센서 모니터링',
+                  album: '바른목ON'
+                });
+              }
+              navigator.mediaSession.playbackState = 'playing';
+              if (typeof navigator.mediaSession.setActionHandler === 'function') {
+                navigator.mediaSession.setActionHandler('pause', function () {
+                  if (session.status === 'running') pauseMeasurement(false);
+                });
+                navigator.mediaSession.setActionHandler('stop', function () {
+                  if (session.status === 'running' || session.status === 'paused') stopAndSaveMeasurement();
+                });
+              }
+            }
+          } catch (e) {}
+        }
+
+        function ensureBackgroundKeepAlive() {
+          if (session.status !== 'running') return;
+          if (session.keepAliveAudio && session.keepAliveAudio.paused && session.keepAliveAudio.src) {
+            try {
+              session.keepAliveAudio.play().catch(function () {});
+            } catch (e) {}
+          }
+          if (session.keepAliveCtx && session.keepAliveCtx.state === 'suspended') {
+            try {
+              session.keepAliveCtx.resume().catch(function () {});
+            } catch (e) {}
+          }
+        }
+
+        function stopBackgroundKeepAlive() {
+          clearKeepAliveUnlockHandler();
+          if (session.keepAliveAudio) {
+            try {
+              session.keepAliveAudio.pause();
+            } catch (e) {}
+          }
+          if (session.keepAliveCtx) {
+            try {
+              if (session.keepAliveCtx.state === 'running') {
+                session.keepAliveCtx.suspend().catch(function () {});
+              }
+            } catch (e) {}
+          }
+          try {
+            if ('mediaSession' in navigator && navigator.mediaSession) {
+              navigator.mediaSession.playbackState = 'none';
+            }
+          } catch (e) {}
+        }
+
+        function detectEnvironment() {
+          const isLocalFile = location.protocol === 'file:' || location.protocol === 'content:';
+          const isBlobOrData = location.protocol === 'blob:' || location.protocol === 'data:';
+          const isSecure =
+            window.isSecureContext === true ||
+            location.protocol === 'https:' ||
+            location.hostname === 'localhost' ||
+            location.hostname === '127.0.0.1';
+          const hasMotionAPI = typeof window.DeviceMotionEvent !== 'undefined';
+          const hasOrientAPI = typeof window.DeviceOrientationEvent !== 'undefined';
+          const hasGenericSensors = 'Accelerometer' in window || 'Gyroscope' in window;
+          const needsIOSPermission =
+            (hasMotionAPI && typeof window.DeviceMotionEvent.requestPermission === 'function') ||
+            (hasOrientAPI && typeof window.DeviceOrientationEvent.requestPermission === 'function');
+          const isMobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+          const isInAppBrowser = /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line|Padlet/i.test(navigator.userAgent);
+          const isIframe = window.self !== window.top;
+
+          return {
+            isLocalFile: isLocalFile,
+            isBlobOrData: isBlobOrData,
+            isSecure: isSecure,
+            hasMotionAPI: hasMotionAPI,
+            hasOrientAPI: hasOrientAPI,
+            hasGenericSensors: hasGenericSensors,
+            needsIOSPermission: needsIOSPermission,
+            isMobileUA: isMobileUA,
+            isInAppBrowser: isInAppBrowser,
+            isIframe: isIframe
+          };
+        }
+
+        async function queryBrowserSensorPermissions() {
+          const result = { accel: 'unknown', gyro: 'unknown' };
+          if (!navigator.permissions || typeof navigator.permissions.query !== 'function') {
+            return result;
+          }
+          try {
+            const pAcc = await navigator.permissions.query({ name: 'accelerometer' });
+            result.accel = pAcc.state;
+          } catch (e) {
+            // Safari / Firefox do not support accelerometer permission query name
+          }
+          try {
+            const pGyro = await navigator.permissions.query({ name: 'gyroscope' });
+            result.gyro = pGyro.state;
+          } catch (e) {
+            // ignore unsupported permission descriptor
+          }
+          return result;
+        }
+
+        function getScreenRotationAngle() {
+          if (window.screen && window.screen.orientation && typeof window.screen.orientation.angle === 'number') {
+            return window.screen.orientation.angle;
+          }
+          if (typeof window.orientation === 'number') {
+            return window.orientation;
+          }
+          return 0;
+        }
+
+        function computePitchAndRollFromAccel(acc) {
+          if (!acc || acc.x === null || acc.y === null || acc.z === null) return null;
+          const angle = getScreenRotationAngle();
+          let ax = acc.x;
+          let ay = acc.y;
+          let az = acc.z;
+
+          if (angle === 90) {
+            ax = -acc.y;
+            ay = acc.x;
+          } else if (angle === -90 || angle === 270) {
+            ax = acc.y;
+            ay = -acc.x;
+          } else if (angle === 180) {
+            ax = -acc.x;
+            ay = -acc.y;
+          }
+
+          const gMag = Math.hypot(ax, ay, az);
+          if (gMag < 1.5) return null;
+
+          // Platform-invariant pitch calculation (0 deg = flat screen up, 90 deg = upright, >90 deg = tilted forward face down)
+          const upComp = Math.abs(ay);
+          const forwardComp = Math.hypot(ax, az);
+          let pitch = Math.atan2(upComp, forwardComp) * (180 / Math.PI);
+          if (ay * az < 0) {
+            pitch = 180 - pitch;
+          }
+
+          const roll = Math.atan2(Math.abs(ax), Math.hypot(ay, az)) * (180 / Math.PI);
+          const linearAccel = Math.abs(gMag - 9.81);
+
+          return { pitch: pitch, roll: roll, linearAccel: linearAccel };
+        }
+
+        function classifyDeviation(devDeg) {
+          if (devDeg <= settings.safeMaxDeg) return 'safe';
+          if (devDeg <= settings.cautionMaxDeg) return 'caution';
+          if (devDeg <= settings.warningMaxDeg) return 'warning';
+          return 'danger';
+        }
+
+        function startTickLoop() {
+          stopTickLoop();
+          try {
+            const workerCode = 'setInterval(function(){ postMessage(1); }, 250);';
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            const url = URL.createObjectURL(blob);
+            const worker = new Worker(url);
+            URL.revokeObjectURL(url);
+            worker.onmessage = function () {
+              onMeasureTick();
+            };
+            session.tickWorker = worker;
+          } catch (e) {
+            session.tickTimer = setInterval(onMeasureTick, 250);
+          }
+        }
+
+        function stopTickLoop() {
+          if (session.tickWorker) {
+            try { session.tickWorker.terminate(); } catch (e) {}
+            session.tickWorker = null;
+          }
+          if (session.tickTimer) {
+            clearInterval(session.tickTimer);
+            session.tickTimer = null;
+          }
+          if (session.reviveTimer) {
+            clearTimeout(session.reviveTimer);
+            session.reviveTimer = null;
+          }
+          if (session.reviveTimer2) {
+            clearTimeout(session.reviveTimer2);
+            session.reviveTimer2 = null;
+          }
+        }
+
+        function accumulateRealSensorTime(nowWall, nowPerf) {
+          if (session.status !== 'running') return;
+          if (!session.hasMotionData && !session.hasOrientData) return;
+
+          if (session.lastAccumWallAt === 0) {
+            session.lastAccumWallAt = nowWall;
+            if (session.totalMs === 0) {
+              session.startTime = nowWall;
+            }
+            return;
+          }
+
+          const rawDt = nowWall - session.lastAccumWallAt;
+          if (rawDt <= 0) return;
+
+          // Continuously accumulate elapsed duration into active posture stage unless user explicitly paused or stopped
+          if (rawDt <= 86400000) {
+            session.totalMs += rawDt;
+            session.durationsMs[session.activeState] += rawDt;
+            if (document.hidden) {
+              session.backgroundMeasuredMs += rawDt;
+            }
+          }
+          session.lastAccumWallAt = nowWall;
+
+          if (session.filteredPitch !== null) {
+            const pitchDiff = Math.abs(session.filteredPitch - settings.baselinePitch);
+            const rollPenalty = Math.max(0, (session.filteredRoll || 0) - 18) * 0.45;
+            const effectiveDev = pitchDiff + rollPenalty;
+
+            if (effectiveDev > session.maxDeviation) {
+              session.maxDeviation = effectiveDev;
+            }
+
+            const nextCandidate = classifyDeviation(effectiveDev);
+            if (nextCandidate !== session.candidateState) {
+              session.candidateState = nextCandidate;
+              session.candidateSince = nowWall;
+            } else if (
+              nextCandidate !== session.activeState &&
+              nowWall - session.candidateSince >= settings.hysteresisMs
+            ) {
+              session.activeState = nextCandidate;
+              session.counts[nextCandidate] += 1;
+              syncBackgroundTheme();
+            }
+          }
+
+          if (nowWall - session.lastCheckpointAt >= 2000) {
+            session.lastCheckpointAt = nowWall;
+            saveActiveCheckpoint();
+          }
+        }
+
+        function recordPacketRate(now) {
+          const nowWall = Date.now();
+          session.lastSensorAt = now;
+          session.lastSensorWallAt = nowWall;
+          session.sensorCount += 1;
+          if (document.hidden) {
+            session.backgroundPacketCount += 1;
+          }
+          session.rateSampleCount += 1;
+
+          if (session.rateWindowStart === 0) {
+            session.rateWindowStart = now;
+          } else if (now - session.rateWindowStart >= 1000) {
+            session.currentHz = Math.round((session.rateSampleCount * 1000) / (now - session.rateWindowStart));
+            session.rateSampleCount = 0;
+            session.rateWindowStart = now;
+          }
+
+          // Drive posture accumulation directly from real sensor packets even if background timers throttle
+          if (session.status === 'running') {
+            accumulateRealSensorTime(nowWall, now);
+          }
+        }
+
+        function applyAccelReading(x, y, z) {
+          session.hasMotionData = true;
+          session.rawAccel = { x: x, y: y, z: z };
+
+          const computed = computePitchAndRollFromAccel(session.rawAccel);
+          if (computed) {
+            session.latestRawPitch = computed.pitch;
+
+            // Dynamic complementary smoothing using gyroscope rotation speed and linear acceleration:
+            // When moving rapidly, damp accelerometer spikes; when steady, converge accurately.
+            const isMoving = session.gyroSpeed > 35 || computed.linearAccel > 1.4;
+            const alpha = isMoving ? 0.08 : 0.24;
+
+            if (session.filteredPitch === null) {
+              session.filteredPitch = computed.pitch;
+              session.filteredRoll = computed.roll;
+            } else {
+              session.filteredPitch = session.filteredPitch + alpha * (computed.pitch - session.filteredPitch);
+              session.filteredRoll = session.filteredRoll + alpha * (computed.roll - session.filteredRoll);
+            }
+
+            if (session.noDataTimer) {
+              clearTimeout(session.noDataTimer);
+              session.noDataTimer = null;
+            }
+            hideMeasureBanner();
+          }
+        }
+
+        function handleDeviceMotion(event) {
+          const now = performance.now();
+          const acc = event.accelerationIncludingGravity;
+          const rot = event.rotationRate;
+
+          const hasAcc = acc && (typeof acc.x === 'number' || typeof acc.y === 'number' || typeof acc.z === 'number');
+          const hasRot = rot && (typeof rot.alpha === 'number' || typeof rot.beta === 'number' || typeof rot.gamma === 'number');
+
+          if (!hasAcc && !hasRot) {
+            session.emptyEventCount += 1;
+            return;
+          }
+
+          // Native devicemotion arrived; prefer it over generic accel polling while active
+          session.hasNativeMotion = true;
+          session.lastNativeMotionWallAt = Date.now();
+          session.usingGenericAccel = false;
+
+          if (hasRot) {
+            session.hasMotionData = true;
+            session.rawGyro = {
+              alpha: typeof rot.alpha === 'number' ? rot.alpha : 0,
+              beta: typeof rot.beta === 'number' ? rot.beta : 0,
+              gamma: typeof rot.gamma === 'number' ? rot.gamma : 0
+            };
+            session.gyroSpeed = Math.hypot(
+              session.rawGyro.alpha || 0,
+              session.rawGyro.beta || 0,
+              session.rawGyro.gamma || 0
+            );
+          }
+
+          if (hasAcc) {
+            applyAccelReading(
+              typeof acc.x === 'number' ? acc.x : 0,
+              typeof acc.y === 'number' ? acc.y : 0,
+              typeof acc.z === 'number' ? acc.z : 0
+            );
+          }
+
+          // Classify and accumulate AFTER updating filteredPitch and gyroSpeed with this fresh packet
+          recordPacketRate(now);
+        }
+
+        function handleDeviceOrientation(event) {
+          if (typeof event.beta !== 'number' && typeof event.gamma !== 'number') return;
+          const nowWall = Date.now();
+          session.hasOrientData = true;
+          session.lastSensorAt = performance.now();
+          session.rawOrient = {
+            beta: typeof event.beta === 'number' ? event.beta : null,
+            gamma: typeof event.gamma === 'number' ? event.gamma : null
+          };
+
+          // Fallback whenever accelerometer/devicemotion has not delivered packets in the last 800ms
+          const accelStale =
+            nowWall - session.lastNativeMotionWallAt > 800 &&
+            nowWall - session.lastGenericAccelWallAt > 800;
+          if (accelStale && typeof event.beta === 'number') {
+            let p = Math.abs(event.beta);
+            if (p > 180) p = 360 - p;
+            session.latestRawPitch = p;
+            if (session.filteredPitch === null) {
+              session.filteredPitch = p;
+            } else {
+              session.filteredPitch = session.filteredPitch + 0.25 * (p - session.filteredPitch);
+            }
+            session.filteredRoll = typeof event.gamma === 'number' ? Math.abs(event.gamma) : 0;
+            if (session.noDataTimer) {
+              clearTimeout(session.noDataTimer);
+              session.noDataTimer = null;
+            }
+            hideMeasureBanner();
+            recordPacketRate(performance.now());
+          }
+        }
+
+        async function requestSensorPermissions() {
+          const env = detectEnvironment();
+
+          if (!env.isSecure && !env.isLocalFile && !env.isBlobOrData) {
+            showMeasureBanner(
+              'err',
+              'HTTPS 보안 연결이 필요합니다',
+              '모바일 브라우저는 보안을 위해 HTTPS 환경에서만 가속도·자이로 센서를 허용합니다. HTTPS 주소로 다시 접속해 주세요.',
+              false
+            );
+            return false;
+          }
+
+          if (!env.hasMotionAPI && !env.hasOrientAPI && !env.hasGenericSensors) {
+            showMeasureBanner(
+              'err',
+              '이 브라우저는 모션 센서를 지원하지 않습니다',
+              '현재 브라우저에서 센서 API를 찾을 수 없습니다. 스마트폰의 최신 Chrome 또는 Safari에서 열어 주세요.',
+              false
+            );
+            return false;
+          }
+
+          // iOS 13+ requires explicit permission prompt synchronously inside a user gesture (before any await)
+          if (env.needsIOSPermission) {
+            try {
+              const permCalls = [];
+              if (env.hasMotionAPI && typeof window.DeviceMotionEvent.requestPermission === 'function') {
+                permCalls.push(window.DeviceMotionEvent.requestPermission());
+              }
+              if (env.hasOrientAPI && typeof window.DeviceOrientationEvent.requestPermission === 'function') {
+                permCalls.push(window.DeviceOrientationEvent.requestPermission());
+              }
+              if (permCalls.length > 0) {
+                const results = await Promise.all(permCalls);
+                if (results.some(function (res) { return res !== 'granted'; })) {
+                  showMeasureBanner(
+                    'err',
+                    '센서 접근 권한이 거부되었습니다',
+                    'iPhone/iPad에서는 동작 및 방향 접근을 허용해야 측정할 수 있습니다. Safari 탭을 완전히 닫았다가 다시 열거나 설정 > Safari에서 권한을 허용한 뒤 다시 시도해 주세요.',
+                    true
+                  );
+                  return false;
+                }
+              }
+            } catch (err) {
+              showMeasureBanner(
+                'err',
+                '센서 권한 요청 중 오류가 발생했습니다',
+                '패들렛 미리보기나 파일 뷰어 내부에서는 iOS가 센서 권한 팝업을 차단할 수 있습니다. HTTPS 주소로 Safari에서 직접 열어 시도해 주세요.',
+                true
+              );
+              return false;
+            }
+          }
+
+          // Note: Do NOT abort early on Android/embedded browsers if Permissions API says 'denied' for Generic Sensor,
+          // because legacy devicemotion / deviceorientation may still deliver real readings.
+          return true;
+        }
+
+        function attachSensorListeners(silent) {
+          detachSensorListeners();
+          session.hasNativeMotion = false;
+          session.motionHandler = handleDeviceMotion;
+          session.orientHandler = handleDeviceOrientation;
+          session.orientAbsHandler = handleDeviceOrientation;
+
+          if (typeof window.DeviceMotionEvent !== 'undefined') {
+            window.addEventListener('devicemotion', session.motionHandler, false);
+          }
+          if (typeof window.DeviceOrientationEvent !== 'undefined') {
+            window.addEventListener('deviceorientation', session.orientHandler, false);
+            window.addEventListener('deviceorientationabsolute', session.orientAbsHandler, false);
+          }
+
+          // Also start W3C Generic Sensor API (Accelerometer / Gyroscope) when supported (Android Chrome)
+          if ('Accelerometer' in window) {
+            try {
+              const accel = new window.Accelerometer({ frequency: 30 });
+              accel.addEventListener('reading', function () {
+                if (session.status !== 'running') return;
+                const nowWall = Date.now();
+                if (nowWall - session.lastNativeMotionWallAt > 800 || session.usingGenericAccel) {
+                  session.usingGenericAccel = true;
+                  session.lastGenericAccelWallAt = nowWall;
+                  applyAccelReading(accel.x || 0, accel.y || 0, accel.z || 0);
+                  recordPacketRate(performance.now());
+                }
+              });
+              accel.addEventListener('error', function (ev) {
+                if (ev && ev.error && ev.error.name === 'NotAllowedError') {
+                  session.genericPermissionError = true;
+                } else {
+                  session.usingGenericAccel = false;
+                }
+              });
+              accel.start();
+              session.accelSensor = accel;
+            } catch (e) {}
+          }
+
+          if ('Gyroscope' in window) {
+            try {
+              const gyro = new window.Gyroscope({ frequency: 30 });
+              const RAD_TO_DEG = 180 / Math.PI;
+              gyro.addEventListener('reading', function () {
+                if (session.status !== 'running') return;
+                const nowWall = Date.now();
+                if (session.usingGenericAccel || nowWall - session.lastNativeMotionWallAt > 800) {
+                  const gx = (gyro.x || 0) * RAD_TO_DEG;
+                  const gy = (gyro.y || 0) * RAD_TO_DEG;
+                  const gz = (gyro.z || 0) * RAD_TO_DEG;
+                  session.rawGyro = { alpha: gz, beta: gx, gamma: gy };
+                  session.gyroSpeed = Math.hypot(gx, gy, gz);
+                }
+              });
+              gyro.addEventListener('error', function (ev) {
+                if (ev && ev.error && ev.error.name === 'NotAllowedError') {
+                  session.genericPermissionError = true;
+                }
+              });
+              gyro.start();
+              session.gyroSensor = gyro;
+            } catch (e) {}
+          }
+
+          session.listenersActive = true;
+
+          // Skip initial 3-second no-data warning during silent background/foreground revivals
+          if (silent || session.hasMotionData || session.hasOrientData) {
+            return;
+          }
+
+          // Honest check if no actual sensor packets arrive within 3.0s
+          session.noDataTimer = setTimeout(async function () {
+            if (session.status === 'running' && !session.hasMotionData && !session.hasOrientData) {
+              const env = detectEnvironment();
+              const perm = await queryBrowserSensorPermissions();
+
+              if (env.isLocalFile || env.isBlobOrData) {
+                showMeasureBanner(
+                  'warn',
+                  '로컬 파일·패들렛 첨부 미리보기에서는 모바일 센서가 차단됩니다',
+                  'HTML 파일을 스마트폰에 내려받아 직접 열거나(file://, content://) 패들렛 파일 미리보기로 열면 브라우저 보안 정책상 가속도·자이로 센서가 자동으로 차단됩니다. 패들렛에는 파일 대신 HTTPS 웹 링크로 올리거나, Chrome/Safari에서 HTTPS 주소로 열어 사용해 주세요.',
+                  true
+                );
+              } else if (env.isIframe) {
+                showMeasureBanner(
+                  'warn',
+                  '패들렛·외부 페이지 내부 프레임(iFrame)에서 센서가 제한되었습니다',
+                  '다른 사이트 안에 삽입된 화면에서는 보안 정책(Permissions-Policy)으로 모션 센서가 차단될 수 있습니다. 아래 [새 탭에서 열기]를 눌러 브라우저 단독 화면으로 실행해 주세요.',
+                  true
+                );
+              } else if (env.isInAppBrowser) {
+                showMeasureBanner(
+                  'warn',
+                  '앱 내 브라우저에서는 센서가 제한될 수 있습니다',
+                  '패들렛·카카오톡·네이버 앱 내부 브라우저에서는 모션 센서가 차단되는 경우가 많습니다. 메뉴에서 "Chrome으로 열기" 또는 "Safari로 열기"를 선택해 주세요.',
+                  true
+                );
+              } else if (perm.accel === 'denied' || session.genericPermissionError || session.emptyEventCount > 0) {
+                showMeasureBanner(
+                  'err',
+                  '동작 센서 권한이 차단되어 있습니다',
+                  '주소창 왼쪽 아이콘(설정/자물쇠) → [권한] → [동작 센서]를 "허용"으로 바꾼 뒤 아래 [권한 다시 확인 및 재시작]을 눌러 주세요. (iPhone은 Safari 설정 확인)',
+                  true
+                );
+              } else if (!env.isMobileUA) {
+                showMeasureBanner(
+                  'warn',
+                  '실제 센서 데이터가 수신되지 않고 있습니다',
+                  '현재 PC 브라우저에서는 가속도·자이로 센서가 제공되지 않습니다. 실제 스마트폰 브라우저(Chrome/Safari, HTTPS)에서 열어 테스트해 주세요.',
+                  true
+                );
+              } else {
+                showMeasureBanner(
+                  'warn',
+                  '센서 신호가 들어오지 않습니다',
+                  '브라우저 사이트 설정에서 "동작 센서"가 허용되어 있는지 확인하거나(주소창 왼쪽 아이콘 → 권한 → 동작 센서 허용), 기기가 가속도·자이로 센서를 지원하는지 확인한 뒤 다시 시작해 주세요.',
+                  true
+                );
+              }
+              updateMeasureUI();
+            }
+          }, 3000);
+        }
+
+        function detachSensorListeners() {
+          if (session.motionHandler) {
+            window.removeEventListener('devicemotion', session.motionHandler, false);
+            session.motionHandler = null;
+          }
+          if (session.orientHandler) {
+            window.removeEventListener('deviceorientation', session.orientHandler, false);
+            session.orientHandler = null;
+          }
+          if (session.orientAbsHandler) {
+            window.removeEventListener('deviceorientationabsolute', session.orientAbsHandler, false);
+            session.orientAbsHandler = null;
+          }
+          if (session.accelSensor) {
+            try { session.accelSensor.stop(); } catch (e) {}
+            session.accelSensor = null;
+          }
+          if (session.gyroSensor) {
+            try { session.gyroSensor.stop(); } catch (e) {}
+            session.gyroSensor = null;
+          }
+          if (session.noDataTimer) {
+            clearTimeout(session.noDataTimer);
+            session.noDataTimer = null;
+          }
+          session.listenersActive = false;
+        }
+
+        function clearIOSRegrantListener() {
+          if (session.iosRegrantHandler) {
+            document.removeEventListener('pointerdown', session.iosRegrantHandler, true);
+            document.removeEventListener('click', session.iosRegrantHandler, true);
+            session.iosRegrantHandler = null;
+          }
+          session.needsIOSRegrant = false;
+        }
+
+        async function startMeasurement(restoredCheckpoint) {
+          if (session.status === 'running' || session.status === 'requesting') return;
+          // Guard against DOM Event objects (e.g., MouseEvent/PointerEvent) being accidentally passed as a checkpoint
+          const cp =
+            restoredCheckpoint &&
+            typeof restoredCheckpoint === 'object' &&
+            typeof restoredCheckpoint.startTime === 'number' &&
+            Number.isFinite(restoredCheckpoint.startTime) &&
+            typeof restoredCheckpoint.totalMs === 'number' &&
+            Number.isFinite(restoredCheckpoint.totalMs)
+              ? restoredCheckpoint
+              : null;
+
+          clearIOSRegrantListener();
+          session.status = 'requesting';
+          document.getElementById('measureSavedNotice').style.display = 'none';
+          updateMeasureUI();
+
+          const ok = await requestSensorPermissions();
+          if (!ok) {
+            session.status = 'idle';
+            updateMeasureUI();
+            syncBackgroundTheme();
+            return;
+          }
+
+          // Reset or restore session metrics BEFORE attaching sensor listeners
+          const nowWall = Date.now();
+          const nowPerf = performance.now();
+          session.status = 'running';
+          session.startTime = cp ? cp.startTime : nowWall;
+          session.manualPausedMs = cp && Number.isFinite(cp.manualPausedMs) ? cp.manualPausedMs : 0;
+          session.pausedStartedWallAt = 0;
+          session.lastTickAt = nowPerf;
+          session.lastTickWallAt = nowWall;
+          session.lastAccumWallAt = cp ? nowWall : 0;
+          session.lastSensorAt = 0;
+          session.lastSensorWallAt = 0;
+          session.lastNativeMotionWallAt = 0;
+          session.lastGenericAccelWallAt = 0;
+          session.lastReviveAt = nowWall;
+          session.lastCheckpointAt = nowWall;
+          session.sensorCount = 0;
+          session.backgroundPacketCount = 0;
+          session.rateSampleCount = 0;
+          session.rateWindowStart = 0;
+          session.currentHz = 0;
+          session.hasMotionData = Boolean(cp && (cp.hasRealData || cp.totalMs > 0));
+          session.hasNativeMotion = false;
+          session.hasOrientData = false;
+          session.usingGenericAccel = false;
+          session.genericPermissionError = false;
+          session.emptyEventCount = 0;
+          session.filteredPitch = null;
+          session.latestRawPitch = null;
+          session.gyroSpeed = 0;
+          session.rawAccel = { x: null, y: null, z: null };
+          session.rawGyro = { alpha: null, beta: null, gamma: null };
+          session.rawOrient = { beta: null, gamma: null };
+          session.activeState = cp && STATES[cp.activeState] ? cp.activeState : 'safe';
+          session.candidateState = session.activeState;
+          session.candidateSince = nowWall;
+          session.badPostureSince = 0;
+          session.totalMs = cp ? cp.totalMs : 0;
+          session.durationsMs = cp && cp.durationsMs
+            ? {
+                safe: Number.isFinite(cp.durationsMs.safe) ? cp.durationsMs.safe : 0,
+                caution: Number.isFinite(cp.durationsMs.caution) ? cp.durationsMs.caution : 0,
+                warning: Number.isFinite(cp.durationsMs.warning) ? cp.durationsMs.warning : 0,
+                danger: Number.isFinite(cp.durationsMs.danger) ? cp.durationsMs.danger : 0
+              }
+            : { safe: 0, caution: 0, warning: 0, danger: 0 };
+          session.counts = cp && cp.counts
+            ? {
+                safe: Number.isFinite(cp.counts.safe) ? cp.counts.safe : 1,
+                caution: Number.isFinite(cp.counts.caution) ? cp.counts.caution : 0,
+                warning: Number.isFinite(cp.counts.warning) ? cp.counts.warning : 0,
+                danger: Number.isFinite(cp.counts.danger) ? cp.counts.danger : 0
+              }
+            : { safe: 1, caution: 0, warning: 0, danger: 0 };
+          session.maxDeviation = cp && Number.isFinite(cp.maxDeviation) ? cp.maxDeviation : 0;
+          session.hiddenSinceWall = 0;
+          session.backgroundMeasuredMs = cp && Number.isFinite(cp.backgroundMeasuredMs) ? cp.backgroundMeasuredMs : 0;
+          session.osSuspendedMs = cp && Number.isFinite(cp.osSuspendedMs) ? cp.osSuspendedMs : 0;
+          session.pausedByBackground = false;
+
+          attachSensorListeners(Boolean(cp));
+          acquireWakeLock();
+          startBackgroundKeepAlive();
+          startTickLoop();
+          saveActiveCheckpoint();
+          updateMeasureUI();
+          syncBackgroundTheme();
+        }
+
+        async function retryMeasurementPermission() {
+          clearIOSRegrantListener();
+          stopTickLoop();
+          detachSensorListeners();
+          stopBackgroundKeepAlive();
+          session.status = 'idle';
+          await startMeasurement();
+        }
+
+        function pauseMeasurement(byBackground) {
+          if (session.status !== 'running') return;
+          clearIOSRegrantListener();
+          onMeasureTick();
+          session.status = 'paused';
+          session.pausedStartedWallAt = Date.now();
+          session.pausedByBackground = Boolean(byBackground);
+          saveActiveCheckpoint();
+          stopTickLoop();
+          detachSensorListeners();
+          releaseWakeLock();
+          stopBackgroundKeepAlive();
+          updateMeasureUI();
+          syncBackgroundTheme();
+        }
+
+        async function resumeMeasurement() {
+          if (session.status !== 'paused') return;
+          clearIOSRegrantListener();
+          const ok = await requestSensorPermissions();
+          if (!ok) return;
+          const nowWall = Date.now();
+          if (session.pausedStartedWallAt > 0) {
+            session.manualPausedMs += Math.max(0, nowWall - session.pausedStartedWallAt);
+            session.pausedStartedWallAt = 0;
+          }
+          session.status = 'running';
+          session.pausedByBackground = false;
+          session.lastTickAt = performance.now();
+          session.lastTickWallAt = nowWall;
+          session.lastAccumWallAt = 0;
+          session.lastReviveAt = nowWall;
+          session.candidateSince = nowWall;
+          attachSensorListeners(false);
+          acquireWakeLock();
+          startBackgroundKeepAlive();
+          startTickLoop();
+          saveActiveCheckpoint();
+          hideMeasureBanner();
+          updateMeasureUI();
+          syncBackgroundTheme();
+        }
+
+        function stopAndSaveMeasurement() {
+          if (session.status !== 'running' && session.status !== 'paused') return;
+          clearIOSRegrantListener();
+          if (session.status === 'running') {
+            onMeasureTick();
+          }
+          stopTickLoop();
+          detachSensorListeners();
+          releaseWakeLock();
+          stopBackgroundKeepAlive();
+          exitPipOverlay();
+          if (session.miniMode) {
+            toggleMiniMode(false);
+          }
+          clearActiveCheckpoint();
+
+          const endWall = Date.now();
+          const savedTotal = session.totalMs;
+          const hasRealData = session.hasMotionData || session.hasOrientData;
+
+          if (savedTotal >= 1000 && hasRealData) {
+            const totalWallMs =
+              session.startTime > 0
+                ? Math.max(savedTotal, endWall - session.startTime - (session.manualPausedMs || 0))
+                : savedTotal;
+            const record = {
+              id: 'rec_' + endWall + '_' + Math.random().toString(36).slice(2, 7),
+              dateKey: toLocalDateKey(session.startTime),
+              startTime: session.startTime,
+              endTime: endWall,
+              totalMs: savedTotal,
+              unmeasuredMs: Math.max(0, totalWallMs - savedTotal),
+              durationsMs: Object.assign({}, session.durationsMs),
+              counts: Object.assign({}, session.counts),
+              baselinePitch: Math.round(settings.baselinePitch),
+              maxDeviation: Math.round(session.maxDeviation)
+            };
+            records.unshift(record);
+            saveRecords();
+
+            const safePct = Math.round((record.durationsMs.safe / record.totalMs) * 100);
+            document.getElementById('measureSavedSummary').textContent =
+              formatDateKorean(record.dateKey) +
+              ' ' +
+              formatClock(record.startTime) +
+              ' ~ ' +
+              formatClock(record.endTime) +
+              ' 동안 총 ' +
+              formatHumanDuration(record.totalMs) +
+              ' 측정했으며, 안정권 비율은 ' +
+              safePct +
+              '%입니다.';
+            document.getElementById('measureSavedNotice').style.display = 'flex';
+          } else if (!hasRealData) {
+            showMeasureBanner(
+              'warn',
+              '실제 센서 데이터가 없어 기록을 저장하지 않았습니다',
+              '센서 데이터가 수신되지 않은 측정 세션은 통계의 정확도를 위해 저장하지 않습니다.',
+              false
+            );
+          } else {
+            showMeasureBanner(
+              'info',
+              '1초 미만의 짧은 측정은 저장되지 않았습니다',
+              '자세 분석을 위해 최소 1초 이상 측정한 뒤 중지해 주세요.',
+              false
+            );
+          }
+
+          session.status = 'idle';
+          session.startTime = 0;
+          session.manualPausedMs = 0;
+          session.pausedStartedWallAt = 0;
+          session.totalMs = 0;
+          session.durationsMs = { safe: 0, caution: 0, warning: 0, danger: 0 };
+          session.counts = { safe: 0, caution: 0, warning: 0, danger: 0 };
+          session.osSuspendedMs = 0;
+          session.backgroundMeasuredMs = 0;
+          session.hasMotionData = false;
+          session.hasNativeMotion = false;
+          session.hasOrientData = false;
+          document.getElementById('sustainedAlert').style.display = 'none';
+          updateMeasureUI();
+          syncBackgroundTheme();
+          renderHome();
+        }
+
+        function calibrateBaseline() {
+          if (session.filteredPitch === null) {
+            showMeasureBanner(
+              'warn',
+              '아직 센서 각도를 수신하지 못했습니다',
+              '실제 스마트폰에서 측정을 시작해 기울기 값이 표시된 뒤 기준 자세를 설정해 주세요.',
+              false
+            );
+            return;
+          }
+          settings.baselinePitch = Math.round(session.filteredPitch);
+          saveSettings();
+          session.activeState = 'safe';
+          session.candidateState = 'safe';
+          session.candidateSince = Date.now();
+          session.badPostureSince = 0;
+          document.getElementById('sustainedAlert').style.display = 'none';
+          updateMeasureUI();
+          syncBackgroundTheme();
+        }
+
+        function onMeasureTick() {
+          if (session.status !== 'running') return;
+          const now = performance.now();
+          const nowWall = Date.now();
+          session.lastTickAt = now;
+          session.lastTickWallAt = nowWall;
+
+          const hasRealData = session.hasMotionData || session.hasOrientData;
+          const sensorFresh = session.lastSensorWallAt > 0 && nowWall - session.lastSensorWallAt <= 2500;
+
+          // Continuously accumulate posture time once real sensors have started, even across background app switches
+          if (hasRealData) {
+            accumulateRealSensorTime(nowWall, now);
+
+            // Sustained warning/danger check (use wall-clock Date.now() so throttling/sleep never stalls alerts)
+            if (session.activeState === 'warning' || session.activeState === 'danger') {
+              if (session.badPostureSince === 0) {
+                session.badPostureSince = nowWall;
+              }
+              const badSec = (nowWall - session.badPostureSince) / 1000;
+              if (badSec >= settings.alertHoldSec) {
+                const alertEl = document.getElementById('sustainedAlert');
+                alertEl.style.display = 'flex';
+                document.getElementById('sustainedAlertText').textContent =
+                  STATES[session.activeState].label +
+                  ' 상태가 ' +
+                  Math.floor(badSec) +
+                  '초 이상 지속되고 있어요. 기기를 눈높이 쪽으로 올리고 목과 어깨의 긴장을 풀어 보세요.';
+
+                if (
+                  settings.vibrationEnabled &&
+                  typeof navigator.vibrate === 'function' &&
+                  nowWall - session.lastVibratedAt > 15000
+                ) {
+                  session.lastVibratedAt = nowWall;
+                  try {
+                    navigator.vibrate([120, 80, 120]);
+                  } catch (e) {}
+                }
+              }
+            } else {
+              session.badPostureSince = 0;
+              document.getElementById('sustainedAlert').style.display = 'none';
+            }
+          }
+
+          // Keep silent media keep-alive and Screen Wake Lock active while measuring
+          ensureBackgroundKeepAlive();
+          if (document.visibilityState === 'visible' && (!session.wakeLock || session.wakeLock.released)) {
+            acquireWakeLock();
+          }
+
+          // Continuous sensor watchdog (works in foreground and during background keep-alive):
+          // If OS suspended or stalled sensors, silently re-attach listeners
+          if (!sensorFresh && !session.needsIOSRegrant) {
+            const hasStartedBefore = hasRealData || session.lastSensorWallAt > 0;
+            const silentMs = session.lastSensorWallAt > 0 ? nowWall - session.lastSensorWallAt : nowWall - session.startTime;
+            const reviveCooldown = document.hidden ? 5000 : 3000;
+            if (hasStartedBefore && silentMs > 2500 && nowWall - session.lastReviveAt >= reviveCooldown) {
+              session.lastReviveAt = nowWall;
+              attachSensorListeners(true);
+            }
+          }
+
+          // Keep checkpoint fresh even if sensors are momentarily quiet so OS tab discards never lose session state
+          if (nowWall - session.lastCheckpointAt >= 3000) {
+            session.lastCheckpointAt = nowWall;
+            saveActiveCheckpoint();
+          }
+
+          if (session.pipActive) {
+            renderPipFrame();
+          }
+
+          if (!document.hidden) {
+            updateMeasureUI();
+          }
+        }
+
+        /* =========================================================
+         * 5B. PICTURE-IN-PICTURE (PiP) & SPLIT-SCREEN MINI MODE
+         * ========================================================= */
+        function renderPipFrame() {
+          if (!session.pipCanvas) return;
+          const canvas = session.pipCanvas;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+
+          const st = STATES[session.activeState] || STATES.safe;
+          const bgMap = {
+            safe: '#e0f2fe',
+            caution: '#dcfce7',
+            warning: '#fef9c3',
+            danger: '#fee2e2'
+          };
+          const fgMap = {
+            safe: '#0369a1',
+            caution: '#15803d',
+            warning: '#a16207',
+            danger: '#b91c1c'
+          };
+
+          const nowWall = Date.now();
+          const sensorFresh = session.lastSensorWallAt > 0 && nowWall - session.lastSensorWallAt <= 3000;
+
+          ctx.fillStyle = bgMap[st.key] || '#f8fafc';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Top brand & sensor live badge
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillText('바른목ON', 18, 30);
+
+          ctx.fillStyle = sensorFresh ? '#15803d' : '#b45309';
+          ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText(sensorFresh ? '센서 실시간 측정 중' : 'OS 백그라운드 대기', canvas.width - 18, 30);
+          ctx.textAlign = 'left';
+
+          // Main Posture State
+          ctx.fillStyle = fgMap[st.key] || '#0f172a';
+          ctx.font = 'bold 34px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillText(st.label, 18, 84);
+
+          // Angle & Elapsed Time
+          const devText =
+            session.filteredPitch !== null
+              ? '편차 ' + Math.round(Math.abs(session.filteredPitch - settings.baselinePitch)) + '° · 각도 ' + Math.round(session.filteredPitch) + '°'
+              : '센서 각도 대기 중';
+          ctx.fillStyle = '#334155';
+          ctx.font = 'bold 18px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillText(devText, 18, 122);
+
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 28px ui-monospace, SFMono-Regular, Menlo, monospace';
+          ctx.fillText(formatHMS(session.totalMs), 18, 166);
+
+          ctx.fillStyle = '#475569';
+          ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText('안정 ' + formatMS(session.durationsMs.safe), canvas.width - 18, 166);
+          ctx.textAlign = 'left';
+        }
+
+        async function togglePipOverlay() {
+          if (session.pipActive) {
+            await exitPipOverlay();
+            return;
+          }
+          const supportsStdPip =
+            typeof document.pictureInPictureEnabled === 'boolean' &&
+            document.pictureInPictureEnabled &&
+            typeof HTMLVideoElement !== 'undefined' &&
+            typeof HTMLVideoElement.prototype.requestPictureInPicture === 'function';
+
+          const tempVideo = document.createElement('video');
+          const supportsWebkitPip = typeof tempVideo.webkitSetPresentationMode === 'function';
+
+          if (!supportsStdPip && !supportsWebkitPip) {
+            showMeasureBanner(
+              'info',
+              '이 브라우저에서는 미니 창(PiP)을 지원하지 않습니다',
+              '다른 앱을 사용하면서 실제 기울기를 측정하려면 스마트폰의 [분할 화면] 또는 [팝업 화면]으로 이 브라우저를 띄운 뒤 [분할·팝업 미니 뷰] 버튼을 눌러 주세요.',
+              false
+            );
+            return;
+          }
+
+          try {
+            if (!session.pipCanvas) {
+              const c = document.createElement('canvas');
+              c.width = 360;
+              c.height = 190;
+              session.pipCanvas = c;
+            }
+            renderPipFrame();
+
+            if (!session.pipVideo) {
+              const v = document.createElement('video');
+              v.muted = true;
+              v.playsInline = true;
+              v.setAttribute('playsinline', '');
+              v.style.position = 'fixed';
+              v.style.width = '1px';
+              v.style.height = '1px';
+              v.style.opacity = '0';
+              v.style.pointerEvents = 'none';
+              document.body.appendChild(v);
+
+              v.addEventListener('leavepictureinpicture', function () {
+                session.pipActive = false;
+                updateMeasureUI();
+              });
+              session.pipVideo = v;
+            }
+
+            if (!session.pipStream && typeof session.pipCanvas.captureStream === 'function') {
+              session.pipStream = session.pipCanvas.captureStream(4);
+              session.pipVideo.srcObject = session.pipStream;
+            }
+
+            await session.pipVideo.play();
+            if (supportsStdPip) {
+              await session.pipVideo.requestPictureInPicture();
+            } else if (supportsWebkitPip) {
+              session.pipVideo.webkitSetPresentationMode('picture-in-picture');
+            }
+            session.pipActive = true;
+            renderPipFrame();
+            updateMeasureUI();
+          } catch (e) {
+            session.pipActive = false;
+            showMeasureBanner(
+              'info',
+              '미니 창(PiP)을 열 수 없습니다',
+              '브라우저 설정이나 기기 환경에서 PiP가 제한되었습니다. 다른 앱과 동시에 실제 기울기를 측정하려면 스마트폰의 [분할 화면] 또는 [팝업 화면]에서 [분할·팝업 미니 뷰]를 이용해 주세요.',
+              false
+            );
+            updateMeasureUI();
+          }
+        }
+
+        async function exitPipOverlay() {
+          session.pipActive = false;
+          try {
+            if (document.pictureInPictureElement) {
+              await document.exitPictureInPicture();
+            } else if (session.pipVideo && typeof session.pipVideo.webkitSetPresentationMode === 'function') {
+              session.pipVideo.webkitSetPresentationMode('inline');
+            }
+          } catch (e) {}
+          updateMeasureUI();
+        }
+
+        function toggleMiniMode(forceState) {
+          session.miniMode = typeof forceState === 'boolean' ? forceState : !session.miniMode;
+          const shell = document.getElementById('appShell');
+          if (shell) {
+            shell.classList.toggle('compact-measure', session.miniMode);
+          }
+          updateMeasureUI();
+        }
+
+        function showMeasureBanner(type, title, desc, showRetry) {
+          const el = document.getElementById('measureBanner');
+          el.className = 'notice-box ' + type;
+          const env = detectEnvironment();
+          const actions = [];
+          if (showRetry) {
+            actions.push('<button type="button" class="btn btn-sm btn-primary" id="btnBannerRetry">권한 다시 확인 및 재시작</button>');
+          }
+          if (env.isIframe && location.protocol === 'https:') {
+            actions.push(
+              '<a class="btn btn-sm btn-secondary" style="text-decoration:none;" href="' +
+                escapeHtml(location.href) +
+                '" target="_blank" rel="noopener noreferrer">새 탭(외부 브라우저)에서 열기</a>'
+            );
+          }
+          const actionHtml =
+            actions.length > 0
+              ? '<div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:6px;">' + actions.join('') + '</div>'
+              : '';
+          el.innerHTML =
+            '<div class="stack-sm" style="gap:4px;"><strong style="font-size:0.9375rem;">' +
+            escapeHtml(title) +
+            '</strong><p style="font-size:0.875rem;">' +
+            escapeHtml(desc) +
+            '</p>' +
+            actionHtml +
+            '</div>';
+          el.style.display = 'flex';
+          const retryBtn = document.getElementById('btnBannerRetry');
+          if (retryBtn) {
+            retryBtn.addEventListener('click', retryMeasurementPermission);
+          }
+        }
+
+        function hideMeasureBanner() {
+          document.getElementById('measureBanner').style.display = 'none';
+        }
+
+        /* =========================================================
+         * 6. RENDERING: LIVE MEASURE UI
+         * ========================================================= */
+        function renderMeasureStaticUI() {
+          const env = detectEnvironment();
+          if (session.status === 'idle') {
+            if (!env.isSecure) {
+              showMeasureBanner(
+                'err',
+                'HTTPS 환경이 아닙니다',
+                '모바일 센서는 HTTPS 환경에서만 작동합니다. HTTPS 주소로 접속해 주세요.'
+              );
+            } else if (!env.isMobileUA || env.isIframe) {
+              showMeasureBanner(
+                'info',
+                '실제 센서 테스트 안내',
+                '모바일 기기(iOS Safari / Android Chrome)에서 측정 시작을 눌러 센서 권한을 허용하면 실시간 가속도·자이로 데이터가 반영됩니다. PC 또는 미리보기 창에서는 센서 데이터가 수신되지 않을 수 있습니다.'
+              );
+            } else {
+              hideMeasureBanner();
+            }
+          }
+          updateMeasureUI();
+        }
+
+        function getStateIconSvg(stateKey) {
+          if (stateKey === 'safe') {
+            return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+          }
+          if (stateKey === 'caution') {
+            return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+          }
+          if (stateKey === 'warning') {
+            return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+          }
+          return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+        }
+
+        function updateMeasureUI() {
+          const btnStart = document.getElementById('btnStartMeasure');
+          const btnPause = document.getElementById('btnPauseMeasure');
+          const btnCal = document.getElementById('btnCalibrate');
+          const btnPip = document.getElementById('btnTogglePip');
+          const btnMini = document.getElementById('btnToggleMiniMode');
+          const btnStop = document.getElementById('btnStopMeasure');
+
+          const hasData = session.hasMotionData || session.hasOrientData;
+
+          if (session.status === 'idle') {
+            btnStart.style.display = 'inline-flex';
+            btnStart.disabled = false;
+            btnStart.querySelector('span').textContent = '측정 시작';
+            btnPause.style.display = 'none';
+            btnStop.style.display = 'none';
+            if (btnPip) btnPip.style.display = 'none';
+            if (btnMini) btnMini.style.display = 'none';
+            btnCal.disabled = true;
+          } else if (session.status === 'requesting') {
+            btnStart.style.display = 'inline-flex';
+            btnStart.disabled = true;
+            btnStart.querySelector('span').textContent = '권한 확인 중...';
+            btnPause.style.display = 'none';
+            btnStop.style.display = 'none';
+            if (btnPip) btnPip.style.display = 'none';
+            if (btnMini) btnMini.style.display = 'none';
+            btnCal.disabled = true;
+          } else if (session.status === 'running') {
+            btnStart.style.display = 'none';
+            btnPause.style.display = 'inline-flex';
+            btnPause.textContent = '일시정지';
+            btnStop.style.display = 'inline-flex';
+            if (btnPip) {
+              btnPip.style.display = 'inline-flex';
+              btnPip.textContent = session.pipActive ? '미니 창(PiP) 닫기' : '다른 앱 위 미니 창(PiP)';
+            }
+            if (btnMini) {
+              btnMini.style.display = 'inline-flex';
+              btnMini.textContent = session.miniMode ? '전체 화면 복귀' : '분할·팝업 미니 뷰';
+            }
+            btnCal.disabled = !hasData;
+          } else if (session.status === 'paused') {
+            btnStart.style.display = 'none';
+            btnPause.style.display = 'inline-flex';
+            btnPause.textContent = '재시작';
+            btnStop.style.display = 'inline-flex';
+            if (btnPip) btnPip.style.display = 'none';
+            if (btnMini) btnMini.style.display = 'inline-flex';
+            btnCal.disabled = true;
+          }
+
+          document.getElementById('measureBaselineText').textContent = '기준 각도 ' + Math.round(settings.baselinePitch) + '°';
+
+          const statusEl = document.getElementById('measureSensorStatusText');
+          if (session.status === 'idle') {
+            statusEl.textContent = '센서 대기 중';
+          } else if (session.status === 'paused') {
+            statusEl.textContent = '측정 일시정지';
+          } else if (hasData) {
+            statusEl.textContent = '센서 실시간 수신 중 · ' + (session.currentHz || '-') + ' Hz';
+          } else {
+            statusEl.textContent = '센서 신호 대기 중 (0 Hz)';
+          }
+
+          // State heading & message
+          const stateTitle = document.getElementById('measureStateTitle');
+          const guideMsg = document.getElementById('measureGuideMsg');
+          const stateIcon = document.getElementById('measureStateIcon');
+
+          if (session.status === 'idle') {
+            stateTitle.textContent = '측정 준비';
+            stateTitle.className = 'measure-state-heading state-text-safe';
+            stateIcon.style.background = 'var(--safe-bg)';
+            stateIcon.style.color = 'var(--safe-text)';
+            stateIcon.innerHTML = getStateIconSvg('safe');
+            guideMsg.textContent = "스마트폰을 평소처럼 편하게 들고 '측정 시작' 버튼을 눌러 센서 권한을 허용해 주세요.";
+          } else if (!hasData) {
+            stateTitle.textContent = '센서 데이터 대기';
+            stateTitle.className = 'measure-state-heading';
+            stateTitle.style.color = 'var(--text-secondary)';
+            stateIcon.style.background = 'var(--bg-subtle)';
+            stateIcon.style.color = 'var(--text-secondary)';
+            guideMsg.textContent = '가속도·자이로 센서 응답을 기다리고 있습니다. 센서 신호가 들어오면 자세 추정이 시작됩니다.';
+          } else {
+            const st = STATES[session.activeState];
+            stateTitle.textContent = st.label + ' (' + st.colorName + ')';
+            stateTitle.className = 'measure-state-heading ' + st.textClass;
+            stateTitle.style.color = '';
+            stateIcon.style.background = 'var(--' + st.key + '-bg)';
+            stateIcon.style.color = 'var(--' + st.key + '-text)';
+            stateIcon.innerHTML = getStateIconSvg(st.key);
+            guideMsg.textContent = st.message;
+          }
+
+          // Main clock and total elapsed time are unified with the exact sum of the 4 posture stages
+          document.getElementById('measureElapsedClock').textContent = formatHMS(session.totalMs);
+          document.getElementById('measureSensorElapsedSub').textContent =
+            '전체 경과 시간 ' + formatHMS(session.totalMs);
+          const gapCard = document.getElementById('unmeasuredGapCard');
+          if (gapCard) {
+            gapCard.style.display = 'none';
+          }
+
+          // Tilt gauge & raw numbers
+          if (hasData && session.filteredPitch !== null) {
+            const dev = Math.abs(session.filteredPitch - settings.baselinePitch);
+            const signedDev = session.filteredPitch - settings.baselinePitch;
+            document.getElementById('measureDeviationVal').textContent = Math.round(dev) + '°';
+            document.getElementById('measurePitchVal').textContent = Math.round(session.filteredPitch) + '°';
+            document.getElementById('measureGyroVal').textContent = Math.round(session.gyroSpeed) + '°/s';
+
+            const clampedNeedle = Math.max(-75, Math.min(75, signedDev));
+            document.getElementById('gaugeNeedleGroup').setAttribute('transform', 'rotate(' + clampedNeedle.toFixed(1) + ' 105 115)');
+          } else {
+            document.getElementById('measureDeviationVal').textContent = '--°';
+            document.getElementById('measurePitchVal').textContent = '--°';
+            document.getElementById('measureGyroVal').textContent = '--°/s';
+            document.getElementById('gaugeNeedleGroup').setAttribute('transform', 'rotate(0 105 115)');
+          }
+
+          // Per-state durations & counts
+          document.getElementById('timeSafe').textContent = formatMS(session.durationsMs.safe);
+          document.getElementById('timeCaution').textContent = formatMS(session.durationsMs.caution);
+          document.getElementById('timeWarning').textContent = formatMS(session.durationsMs.warning);
+          document.getElementById('timeDanger').textContent = formatMS(session.durationsMs.danger);
+
+          document.getElementById('countSafe').textContent = session.counts.safe + '회';
+          document.getElementById('countCaution').textContent = session.counts.caution + '회';
+          document.getElementById('countWarning').textContent = session.counts.warning + '회';
+          document.getElementById('countDanger').textContent = session.counts.danger + '회';
+
+          // Raw verification readout
+          document.getElementById('sensorRateLabel').textContent =
+            '수신 횟수: ' +
+            session.sensorCount +
+            '회 (' +
+            session.currentHz +
+            ' Hz)' +
+            (session.backgroundPacketCount > 0 ? ' · 백그라운드 수신 ' + session.backgroundPacketCount + '회' : '');
+          const ax = session.rawAccel.x !== null ? session.rawAccel.x.toFixed(2) : '--';
+          const ay = session.rawAccel.y !== null ? session.rawAccel.y.toFixed(2) : '--';
+          const az = session.rawAccel.z !== null ? session.rawAccel.z.toFixed(2) : '--';
+          document.getElementById('rawAccelText').textContent = 'X: ' + ax + ' · Y: ' + ay + ' · Z: ' + az;
+
+          const ga = session.rawGyro.alpha !== null ? session.rawGyro.alpha.toFixed(1) : '--';
+          const gb = session.rawGyro.beta !== null ? session.rawGyro.beta.toFixed(1) : '--';
+          const gc = session.rawGyro.gamma !== null ? session.rawGyro.gamma.toFixed(1) : '--';
+          const ob = session.rawOrient.beta !== null ? session.rawOrient.beta.toFixed(0) + '°' : '--';
+          document.getElementById('rawGyroText').textContent = 'α: ' + ga + ' · β: ' + gb + ' · γ: ' + gc + ' (방향β ' + ob + ')';
+        }
+
+        /* =========================================================
+         * 7. RENDERING: HOME VIEW
+         * ========================================================= */
+        function renderHome() {
+          const todayKey = toLocalDateKey(Date.now());
+          document.getElementById('homeDateLabel').textContent = formatDateKorean(todayKey) + ' · 오늘의 자세 습관';
+
+          const env = detectEnvironment();
+          const envNotice = document.getElementById('homeEnvNotice');
+          if (!env.isSecure) {
+            envNotice.className = 'notice-box err';
+            envNotice.innerHTML =
+              '<div class="stack-sm" style="gap:4px;"><strong>HTTPS 환경이 필요합니다</strong><p style="font-size:0.875rem;">스마트폰 센서를 사용하려면 HTTPS 보안 주소로 접속해야 합니다.</p></div>';
+            envNotice.style.display = 'flex';
+          } else if (!env.isMobileUA || env.isIframe) {
+            envNotice.className = 'notice-box info';
+            envNotice.innerHTML =
+              '<div class="stack-sm" style="gap:4px;"><strong>실제 스마트폰 테스트 안내</strong><p style="font-size:0.875rem;">현재 PC 또는 미리보기 환경에서는 기기 센서가 비활성화될 수 있습니다. 실제 측정은 스마트폰 브라우저(HTTPS)에서 확인해 주세요.</p></div>';
+            envNotice.style.display = 'flex';
+          } else {
+            envNotice.style.display = 'none';
+          }
+
+          const todayRecords = records.filter(function (r) {
+            return r.dateKey === todayKey;
+          });
+
+          let totalMs = 0;
+          let safeMs = 0;
+          let cautionMs = 0;
+          let warningMs = 0;
+          let dangerMs = 0;
+
+          todayRecords.forEach(function (r) {
+            totalMs += r.totalMs;
+            safeMs += r.durationsMs.safe || 0;
+            cautionMs += r.durationsMs.caution || 0;
+            warningMs += r.durationsMs.warning || 0;
+            dangerMs += r.durationsMs.danger || 0;
+          });
+
+          document.getElementById('homeTodayTotal').textContent = formatHumanDuration(totalMs);
+          document.getElementById('homeTodaySessions').textContent = todayRecords.length + '회 측정';
+          document.getElementById('homeTodaySafe').textContent = formatHumanDuration(safeMs);
+          document.getElementById('homeTodayNonSafe').textContent = formatHumanDuration(totalMs - safeMs);
+
+          if (totalMs > 0) {
+            const safePct = Math.round((safeMs / totalMs) * 100);
+            document.getElementById('homeTodaySafeRate').textContent = '전체의 ' + safePct + '%';
+            document.getElementById('homeTodayLastTime').textContent = '최근 ' + formatClock(todayRecords[0].endTime);
+          } else {
+            document.getElementById('homeTodaySafeRate').textContent = '기록 없음';
+            document.getElementById('homeTodayLastTime').textContent = '오늘 측정 기록 없음';
+          }
+
+          const goalMs = settings.dailyGoalMinutes * 60 * 1000;
+          const goalPct = Math.min(100, Math.round((totalMs / goalMs) * 100));
+          document.getElementById('homeGoalProgressText').textContent = goalPct + '%';
+          document.getElementById('homeGoalTargetText').textContent = '목표 ' + settings.dailyGoalMinutes + '분';
+          document.getElementById('homeGoalBarLabel').textContent =
+            formatMinutesOnly(totalMs) + ' / ' + settings.dailyGoalMinutes + '분';
+          document.getElementById('homeGoalBarFill').style.width = goalPct + '%';
+          document.getElementById('homeGoalBarWrap').setAttribute('aria-valuenow', String(goalPct));
+
+          const distWrap = document.getElementById('homeTodayDistWrap');
+          if (totalMs > 0) {
+            distWrap.style.display = 'flex';
+            const segments = [
+              { key: 'safe', ms: safeMs },
+              { key: 'caution', ms: cautionMs },
+              { key: 'warning', ms: warningMs },
+              { key: 'danger', ms: dangerMs }
+            ];
+            document.getElementById('homeTodayStackBar').innerHTML = segments
+              .map(function (seg) {
+                const w = (seg.ms / totalMs) * 100;
+                return (
+                  '<div class="mini-stack-seg" style="width:' +
+                  w.toFixed(2) +
+                  '%;background:' +
+                  STATES[seg.key].barColor +
+                  ';" title="' +
+                  STATES[seg.key].label +
+                  ' ' +
+                  Math.round(w) +
+                  '%"></div>'
+                );
+              })
+              .join('');
+
+            document.getElementById('homeTodayDistMeta').textContent =
+              '안정 ' +
+              Math.round((safeMs / totalMs) * 100) +
+              '% · 주의 ' +
+              Math.round((cautionMs / totalMs) * 100) +
+              '% · 경고 ' +
+              Math.round((warningMs / totalMs) * 100) +
+              '% · 위험 ' +
+              Math.round((dangerMs / totalMs) * 100) +
+              '%';
+          } else {
+            distWrap.style.display = 'none';
+          }
+        }
+
+        /* =========================================================
+         * 8. RENDERING: ANALYTICS (WEEKLY & MONTHLY + FEEDBACK)
+         * ========================================================= */
+        function aggregateByDateKeys(dateKeys) {
+          const map = {};
+          dateKeys.forEach(function (k) {
+            map[k] = {
+              dateKey: k,
+              sessions: 0,
+              totalMs: 0,
+              safe: 0,
+              caution: 0,
+              warning: 0,
+              danger: 0,
+              counts: { safe: 0, caution: 0, warning: 0, danger: 0 }
+            };
+          });
+
+          records.forEach(function (r) {
+            if (!map[r.dateKey]) return;
+            const slot = map[r.dateKey];
+            slot.sessions += 1;
+            slot.totalMs += r.totalMs;
+            slot.safe += r.durationsMs.safe || 0;
+            slot.caution += r.durationsMs.caution || 0;
+            slot.warning += r.durationsMs.warning || 0;
+            slot.danger += r.durationsMs.danger || 0;
+            if (r.counts) {
+              slot.counts.safe += r.counts.safe || 0;
+              slot.counts.caution += r.counts.caution || 0;
+              slot.counts.warning += r.counts.warning || 0;
+              slot.counts.danger += r.counts.danger || 0;
+            }
+          });
+
+          return dateKeys.map(function (k) {
+            return map[k];
+          });
+        }
+
+        function sumAggregates(items) {
+          return items.reduce(
+            function (acc, item) {
+              acc.sessions += item.sessions;
+              acc.totalMs += item.totalMs;
+              acc.safe += item.safe;
+              acc.caution += item.caution;
+              acc.warning += item.warning;
+              acc.danger += item.danger;
+              if (item.totalMs > 0) acc.activeDays += 1;
+              return acc;
+            },
+            { sessions: 0, totalMs: 0, safe: 0, caution: 0, warning: 0, danger: 0, activeDays: 0 }
+          );
+        }
+
+        function renderAnalytics() {
+          const isWeekly = analyticsPeriod === 'weekly';
+          document.getElementById('tabWeekly').classList.toggle('active', isWeekly);
+          document.getElementById('tabWeekly').setAttribute('aria-selected', String(isWeekly));
+          document.getElementById('tabMonthly').classList.toggle('active', !isWeekly);
+          document.getElementById('tabMonthly').setAttribute('aria-selected', String(!isWeekly));
+
+          const days = isWeekly ? 7 : 30;
+          const currentKeys = getRecentDateKeys(days, 0);
+          const prevKeys = getRecentDateKeys(days, days);
+
+          const dailyItems = aggregateByDateKeys(currentKeys);
+          const prevItems = aggregateByDateKeys(prevKeys);
+
+          const currSum = sumAggregates(dailyItems);
+          const prevSum = sumAggregates(prevItems);
+
+          document.getElementById('kpiTotalLabel').textContent = isWeekly ? '주간 총 측정 시간' : '월간 총 측정 시간';
+          document.getElementById('analyticsPeriodDesc').textContent =
+            (isWeekly ? '최근 7일 (' : '최근 30일 (') +
+            formatShortDay(currentKeys[0]) +
+            ' ~ ' +
+            formatShortDay(currentKeys[currentKeys.length - 1]) +
+            ') 실제 측정 기록입니다.';
+
+          document.getElementById('anaTotalTime').textContent = formatMinutesOnly(currSum.totalMs);
+          document.getElementById('anaSessionCount').textContent = currSum.sessions + '회 측정';
+          document.getElementById('anaSafeTime').textContent = formatMinutesOnly(currSum.safe);
+          document.getElementById('anaMeasuredDays').textContent = '기록된 날 ' + currSum.activeDays + '일 / ' + days + '일';
+
+          if (currSum.totalMs > 0) {
+            const safePct = Math.round((currSum.safe / currSum.totalMs) * 100);
+            document.getElementById('anaSafeRatio').textContent = safePct + '%';
+
+            const sortedStates = STATE_ORDER.slice().sort(function (a, b) {
+              return currSum[b] - currSum[a];
+            });
+            document.getElementById('anaDominantState').textContent = '가장 많은 상태: ' + STATES[sortedStates[0]].label;
+          } else {
+            document.getElementById('anaSafeRatio').textContent = '기록 없음';
+            document.getElementById('anaDominantState').textContent = '측정 기록이 필요합니다';
+          }
+
+          if (currSum.totalMs > 0 && prevSum.totalMs > 0) {
+            const currRate = (currSum.safe / currSum.totalMs) * 100;
+            const prevRate = (prevSum.safe / prevSum.totalMs) * 100;
+            const diff = Math.round(currRate - prevRate);
+            const sign = diff > 0 ? '+' : '';
+            document.getElementById('anaDeltaRatio').textContent = sign + diff + '%p';
+            document.getElementById('anaDeltaRatio').style.color =
+              diff >= 0 ? 'var(--safe-text)' : 'var(--warning-text)';
+            document.getElementById('anaDeltaDesc').textContent =
+              '이전 ' + days + '일 안정권 비율 ' + Math.round(prevRate) + '%';
+          } else {
+            document.getElementById('anaDeltaRatio').textContent = '-';
+            document.getElementById('anaDeltaRatio').style.color = 'var(--text-primary)';
+            document.getElementById('anaDeltaDesc').textContent =
+              prevSum.totalMs === 0 ? '이전 기간 기록 없음' : '현재 기간 기록 없음';
+          }
+
+          // Prepare Bar Chart Buckets (7 daily buckets for weekly; 5 weekly buckets for monthly)
+          let chartBuckets = [];
+          if (isWeekly) {
+            document.getElementById('barChartTitle').textContent = '최근 7일 날짜별 측정 시간';
+            document.getElementById('barChartSub').textContent = "기록이 없는 날짜는 '기록 없음'으로 표시됩니다.";
+            chartBuckets = dailyItems.map(function (d) {
+              return {
+                label: d.dateKey.slice(5).replace('-', '/'),
+                fullLabel: formatShortDay(d.dateKey),
+                totalMs: d.totalMs,
+                safe: d.safe,
+                caution: d.caution,
+                warning: d.warning,
+                danger: d.danger,
+                sessions: d.sessions
+              };
+            });
+          } else {
+            document.getElementById('barChartTitle').textContent = '최근 30일 주차별 자세 변화';
+            document.getElementById('barChartSub').textContent = '6일씩 5개 구간으로 나누어 실제 측정 시간을 비교합니다.';
+            for (let b = 0; b < 5; b++) {
+              const slice = dailyItems.slice(b * 6, (b + 1) * 6);
+              const summed = sumAggregates(slice);
+              chartBuckets.push({
+                label: b + 1 + '구간',
+                fullLabel: slice[0].dateKey.slice(5) + ' ~ ' + slice[slice.length - 1].dateKey.slice(5),
+                totalMs: summed.totalMs,
+                safe: summed.safe,
+                caution: summed.caution,
+                warning: summed.warning,
+                danger: summed.danger,
+                sessions: summed.sessions
+              });
+            }
+          }
+
+          renderBarChart(chartBuckets);
+          renderDonutChart(currSum);
+          renderPersonalizedFeedback(currSum, prevSum, dailyItems, isWeekly);
+          renderAnalyticsTable(isWeekly ? dailyItems : chartBuckets, isWeekly);
+        }
+
+        function renderBarChart(buckets) {
+          const svg = document.getElementById('barChartSvg');
+          const tooltip = document.getElementById('barChartTooltip');
+          const W = 520;
+          const H = 240;
+          const padL = 44;
+          const padR = 16;
+          const padT = 22;
+          const padB = 38;
+          const plotW = W - padL - padR;
+          const plotH = H - padT - padB;
+
+          const maxMs = Math.max.apply(
+            null,
+            buckets.map(function (b) {
+              return b.totalMs;
+            })
+          );
+          const maxMin = Math.max(5, Math.ceil(maxMs / 60000 / 5) * 5);
+          const maxScaleMs = maxMin * 60000;
+
+          let html = '';
+
+          // Y grid lines
+          for (let i = 0; i <= 4; i++) {
+            const y = padT + (plotH * i) / 4;
+            const valMin = Math.round((maxMin * (4 - i)) / 4);
+            html += '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '" stroke="#e2e8f0" stroke-width="1" />';
+            html += '<text x="' + (padL - 8) + '" y="' + (y + 4) + '" text-anchor="end" font-size="11" fill="#64748b">' + valMin + '분</text>';
+          }
+
+          const slotW = plotW / buckets.length;
+          const barW = Math.min(38, slotW * 0.56);
+
+          buckets.forEach(function (b, idx) {
+            const cx = padL + slotW * idx + slotW / 2;
+            const x = cx - barW / 2;
+
+            if (b.totalMs === 0) {
+              html +=
+                '<rect x="' +
+                x +
+                '" y="' +
+                (padT + plotH - 4) +
+                '" width="' +
+                barW +
+                '" height="4" rx="2" fill="#cbd5e1" />';
+              html +=
+                '<text x="' +
+                cx +
+                '" y="' +
+                (padT + plotH - 10) +
+                '" text-anchor="middle" font-size="10" fill="#94a3b8">기록 없음</text>';
+            } else {
+              let currentY = padT + plotH;
+              STATE_ORDER.forEach(function (stKey) {
+                const segMs = b[stKey];
+                if (segMs <= 0) return;
+                const segH = (segMs / maxScaleMs) * plotH;
+                currentY -= segH;
+                html +=
+                  '<rect x="' +
+                  x +
+                  '" y="' +
+                  currentY.toFixed(1) +
+                  '" width="' +
+                  barW +
+                  '" height="' +
+                  Math.max(1.5, segH).toFixed(1) +
+                  '" fill="' +
+                  STATES[stKey].barColor +
+                  '" />';
+              });
+              html +=
+                '<text x="' +
+                cx +
+                '" y="' +
+                Math.max(12, currentY - 6).toFixed(1) +
+                '" text-anchor="middle" font-size="10" font-weight="700" fill="#334155">' +
+                formatMinutesOnly(b.totalMs) +
+                '</text>';
+            }
+
+            // Interactive hit overlay
+            html +=
+              '<rect class="bar-hit" data-idx="' +
+              idx +
+              '" x="' +
+              (padL + slotW * idx) +
+              '" y="' +
+              padT +
+              '" width="' +
+              slotW +
+              '" height="' +
+              plotH +
+              '" fill="transparent" style="cursor:pointer;" />';
+
+            html +=
+              '<text x="' +
+              cx +
+              '" y="' +
+              (H - 12) +
+              '" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">' +
+              escapeHtml(b.label) +
+              '</text>';
+          });
+
+          svg.innerHTML = html;
+
+          svg.querySelectorAll('.bar-hit').forEach(function (rect) {
+            const showTip = function () {
+              const b = buckets[Number(rect.getAttribute('data-idx'))];
+              if (!b) return;
+              if (b.totalMs === 0) {
+                tooltip.textContent = b.fullLabel + ' · 기록 없음';
+              } else {
+                const safePct = Math.round((b.safe / b.totalMs) * 100);
+                tooltip.textContent =
+                  b.fullLabel +
+                  ' · 총 ' +
+                  formatHumanDuration(b.totalMs) +
+                  ' (' +
+                  b.sessions +
+                  '회) · 안정권 ' +
+                  formatHumanDuration(b.safe) +
+                  ' (' +
+                  safePct +
+                  '%)';
+              }
+            };
+            rect.addEventListener('mouseenter', showTip);
+            rect.addEventListener('click', showTip);
+          });
+        }
+
+        function renderDonutChart(sum) {
+          const svg = document.getElementById('donutChartSvg');
+          const legend = document.getElementById('donutLegendList');
+          const cx = 94;
+          const cy = 94;
+          const r = 68;
+          const strokeW = 24;
+          const circ = 2 * Math.PI * r;
+
+          if (sum.totalMs === 0) {
+            svg.innerHTML =
+              '<circle cx="' +
+              cx +
+              '" cy="' +
+              cy +
+              '" r="' +
+              r +
+              '" fill="none" stroke="#e2e8f0" stroke-width="' +
+              strokeW +
+              '" />' +
+              '<text x="' +
+              cx +
+              '" y="' +
+              (cy + 4) +
+              '" text-anchor="middle" font-size="13" font-weight="700" fill="#64748b">기록 없음</text>';
+            legend.innerHTML = '<p class="meta-line">해당 기간에 저장된 측정 기록이 없어 그래프를 표시할 수 없습니다.</p>';
+            return;
+          }
+
+          let offset = 0;
+          let svgHtml = '';
+          let legendHtml = '';
+
+          STATE_ORDER.forEach(function (key) {
+            const ms = sum[key];
+            const ratio = ms / sum.totalMs;
+            const dash = ratio * circ;
+            const pct = Math.round(ratio * 100);
+
+            if (ms > 0) {
+              svgHtml +=
+                '<circle cx="' +
+                cx +
+                '" cy="' +
+                cy +
+                '" r="' +
+                r +
+                '" fill="none" stroke="' +
+                STATES[key].barColor +
+                '" stroke-width="' +
+                strokeW +
+                '" stroke-dasharray="' +
+                dash.toFixed(2) +
+                ' ' +
+                circ.toFixed(2) +
+                '" stroke-dashoffset="' +
+                (-offset).toFixed(2) +
+                '" transform="rotate(-90 ' +
+                cx +
+                ' ' +
+                cy +
+                ')" />';
+              offset += dash;
+            }
+
+            legendHtml +=
+              '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:0.875rem;">' +
+              '<span style="display:inline-flex;align-items:center;gap:8px;font-weight:600;">' +
+              '<span class="legend-color" style="background:' +
+              STATES[key].barColor +
+              ';"></span>' +
+              STATES[key].label +
+              '</span>' +
+              '<span class="tabular-nums" style="color:var(--text-secondary);">' +
+              formatMinutesOnly(ms) +
+              ' (' +
+              pct +
+              '%)</span>' +
+              '</div>';
+          });
+
+          const safePctTotal = Math.round((sum.safe / sum.totalMs) * 100);
+          svgHtml +=
+            '<text x="' +
+            cx +
+            '" y="' +
+            (cy - 4) +
+            '" text-anchor="middle" font-size="11" font-weight="600" fill="#64748b">안정권 비율</text>' +
+            '<text x="' +
+            cx +
+            '" y="' +
+            (cy + 18) +
+            '" text-anchor="middle" font-size="22" font-weight="800" fill="#0f172a">' +
+            safePctTotal +
+            '%</text>';
+
+          svg.innerHTML = svgHtml;
+          legend.innerHTML = legendHtml;
+        }
+
+        function renderPersonalizedFeedback(currSum, prevSum, dailyItems, isWeekly) {
+          const container = document.getElementById('feedbackList');
+          const items = [];
+
+          if (currSum.sessions < 1 || currSum.totalMs < 30000) {
+            container.innerHTML =
+              '<div class="card-subtle"><p class="body-text">분석할 측정 데이터가 아직 부족합니다. 최소 30초 이상 실제로 측정한 기록이 저장되면 맞춤형 습관 피드백이 표시됩니다.</p></div>';
+            return;
+          }
+
+          const currSafePct = Math.round((currSum.safe / currSum.totalMs) * 100);
+          const currWarnDangerPct = Math.round(((currSum.warning + currSum.danger) / currSum.totalMs) * 100);
+
+          if (prevSum.totalMs >= 30000) {
+            const prevSafePct = Math.round((prevSum.safe / prevSum.totalMs) * 100);
+            const prevWarnDangerPct = Math.round(((prevSum.warning + prevSum.danger) / prevSum.totalMs) * 100);
+
+            if (currSafePct > prevSafePct) {
+              items.push('안정권 유지 비율이 이전 기간보다 ' + (currSafePct - prevSafePct) + '%p 증가했어요! 좋은 습관이 자리 잡고 있습니다.');
+            } else if (currSafePct < prevSafePct) {
+              items.push('안정권 유지 비율이 이전 기간보다 ' + (prevSafePct - currSafePct) + '%p 낮아졌어요. 측정 시작 전 기준 자세를 다시 맞춰 보세요.');
+            }
+
+            if (currWarnDangerPct < prevWarnDangerPct) {
+              items.push('경고·위험 단계 비중이 이전 ' + (isWeekly ? '주' : '기간') + '보다 ' + (prevWarnDangerPct - currWarnDangerPct) + '%p 줄어들었어요.');
+            }
+          }
+
+          if (currWarnDangerPct >= 30) {
+            items.push('스마트폰을 사용하는 동안 기기가 크게 기울어진 상태가 오래 지속되는 경향이 있어요. 양손으로 기기를 조금 더 높게 들어 올려 보세요.');
+          } else if (currSafePct >= 70) {
+            items.push('전체 측정 시간 중 ' + currSafePct + '%를 안정권에서 유지했어요. 지금처럼 눈높이에 가까운 편안한 각도를 이어가 보세요.');
+          } else {
+            items.push('주의 단계 비중이 조금씩 나타나고 있어요. 화면이 아래로 향하지 않도록 팔꿈치를 몸 쪽으로 가볍게 받쳐 보세요.');
+          }
+
+          if (currSum.totalMs >= 20 * 60 * 1000) {
+            items.push('누적 사용 시간이 긴 편이에요. 일정 시간마다 화면에서 눈을 떼고 목과 어깨를 천천히 움직이며 휴식을 취해 보세요.');
+          }
+
+          container.innerHTML = items
+            .map(function (txt) {
+              return '<div class="card-subtle"><p class="body-text">' + escapeHtml(txt) + '</p></div>';
+            })
+            .join('');
+        }
+
+        function renderAnalyticsTable(rows, isWeekly) {
+          const head = document.getElementById('analyticsTableHead');
+          const body = document.getElementById('analyticsTableBody');
+          document.getElementById('analyticsTableTitle').textContent = isWeekly
+            ? '최근 7일 날짜별 상세 표'
+            : '최근 30일 구간별 상세 표';
+
+          head.innerHTML =
+            '<tr><th>' +
+            (isWeekly ? '날짜' : '기간 구간') +
+            '</th><th>측정 횟수</th><th>총 시간</th><th>안정권</th><th>주의</th><th>경고·위험</th></tr>';
+
+          body.innerHTML = rows
+            .slice()
+            .reverse()
+            .map(function (row) {
+              const title = isWeekly ? formatShortDay(row.dateKey) : row.label + ' (' + row.fullLabel + ')';
+              if (row.totalMs === 0) {
+                return (
+                  '<tr><td>' +
+                  escapeHtml(title) +
+                  '</td><td class="tabular-nums">0회</td><td colspan="4" style="color:var(--text-muted);">기록 없음</td></tr>'
+                );
+              }
+              const safePct = Math.round((row.safe / row.totalMs) * 100);
+              const cauPct = Math.round((row.caution / row.totalMs) * 100);
+              const wdPct = Math.round(((row.warning + row.danger) / row.totalMs) * 100);
+              return (
+                '<tr>' +
+                '<td style="font-weight:600;">' +
+                escapeHtml(title) +
+                '</td>' +
+                '<td class="tabular-nums">' +
+                row.sessions +
+                '회</td>' +
+                '<td class="tabular-nums" style="font-weight:700;">' +
+                formatHumanDuration(row.totalMs) +
+                '</td>' +
+                '<td class="tabular-nums" style="color:var(--safe-text);font-weight:700;">' +
+                formatMinutesOnly(row.safe) +
+                ' (' +
+                safePct +
+                '%)</td>' +
+                '<td class="tabular-nums">' +
+                formatMinutesOnly(row.caution) +
+                ' (' +
+                cauPct +
+                '%)</td>' +
+                '<td class="tabular-nums">' +
+                formatMinutesOnly(row.warning + row.danger) +
+                ' (' +
+                wdPct +
+                '%)</td>' +
+                '</tr>'
+              );
+            })
+            .join('');
+        }
+
+        /* =========================================================
+         * 9. RENDERING: HISTORY VIEW
+         * ========================================================= */
+        function renderHistory() {
+          const listEl = document.getElementById('historyListContainer');
+          const filterInput = document.getElementById('historyDateFilter');
+          const clearBtn = document.getElementById('historyClearFilterBtn');
+
+          filterInput.value = historyDateFilter;
+          clearBtn.style.display = historyDateFilter ? 'inline-flex' : 'none';
+
+          const filtered = historyDateFilter
+            ? records.filter(function (r) {
+                return r.dateKey === historyDateFilter;
+              })
+            : records;
+
+          document.getElementById('historyCountMeta').textContent =
+            '저장된 기록 ' + filtered.length + '건' + (historyDateFilter ? ' (' + formatDateKorean(historyDateFilter) + ')' : '');
+
+          document.getElementById('historyDeleteAllBtn').disabled = records.length === 0;
+
+          if (filtered.length === 0) {
+            listEl.innerHTML =
+              '<div class="card stack-sm" style="text-align:center;padding:36px 20px;">' +
+              '<p style="font-weight:700;font-size:1.0625rem;">표시할 측정 기록이 없습니다</p>' +
+              '<p class="meta-line">' +
+              (historyDateFilter
+                ? '선택한 날짜에 저장된 측정 기록이 없습니다.'
+                : '실시간 측정 화면에서 측정을 완료하면 기록이 자동으로 이곳에 저장됩니다.') +
+              '</p>' +
+              '<div style="padding-top:8px;"><button type="button" class="btn btn-sm btn-primary" data-nav="measure">측정하러 가기</button></div>' +
+              '</div>';
+            return;
+          }
+
+          listEl.innerHTML = filtered
+            .map(function (r) {
+              const safePct = r.totalMs > 0 ? Math.round((r.durationsMs.safe / r.totalMs) * 100) : 0;
+              const segs = STATE_ORDER.map(function (key) {
+                const w = r.totalMs > 0 ? (r.durationsMs[key] / r.totalMs) * 100 : 0;
+                return (
+                  '<div class="mini-stack-seg" style="width:' +
+                  w.toFixed(2) +
+                  '%;background:' +
+                  STATES[key].barColor +
+                  ';"></div>'
+                );
+              }).join('');
+
+              return (
+                '<article class="record-item">' +
+                '<div class="record-top">' +
+                '<div class="stack-sm" style="gap:3px;">' +
+                '<div style="font-weight:700;font-size:1rem;">' +
+                escapeHtml(formatDateKorean(r.dateKey)) +
+                '</div>' +
+                '<div class="meta-line tabular-nums">' +
+                formatClock(r.startTime) +
+                ' ~ ' +
+                formatClock(r.endTime) +
+                ' · 총 ' +
+                formatHumanDuration(r.totalMs) +
+                ' · 안정권 ' +
+                formatHumanDuration(r.durationsMs.safe) +
+                ' (' +
+                safePct +
+                '%)' +
+                '</div>' +
+                '</div>' +
+                '<div class="record-actions">' +
+                '<button type="button" class="btn btn-sm btn-secondary" data-detail-id="' +
+                escapeHtml(r.id) +
+                '">상세 보기</button>' +
+                '<button type="button" class="btn btn-sm btn-ghost-danger" data-delete-id="' +
+                escapeHtml(r.id) +
+                '">삭제</button>' +
+                '</div>' +
+                '</div>' +
+                '<div class="mini-stack-bar" aria-label="자세 상태 비율 막대">' +
+                segs +
+                '</div>' +
+                '</article>'
+              );
+            })
+            .join('');
+        }
+
+        function openRecordDetailModal(id) {
+          const rec = records.find(function (r) {
+            return r.id === id;
+          });
+          if (!rec) return;
+
+          const rows = STATE_ORDER.map(function (key) {
+            const ms = rec.durationsMs[key] || 0;
+            const cnt = rec.counts ? rec.counts[key] || 0 : 0;
+            const pct = rec.totalMs > 0 ? Math.round((ms / rec.totalMs) * 100) : 0;
+            return (
+              '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border-hairline);">' +
+              '<span style="font-weight:600;display:inline-flex;align-items:center;gap:8px;">' +
+              '<span class="legend-color" style="background:' +
+              STATES[key].barColor +
+              ';"></span>' +
+              STATES[key].label +
+              '</span>' +
+              '<span class="tabular-nums">' +
+              formatHumanDuration(ms) +
+              ' (' +
+              pct +
+              '%) · ' +
+              cnt +
+              '회</span>' +
+              '</div>'
+            );
+          }).join('');
+
+          openModal(
+            formatDateKorean(rec.dateKey) + ' 측정 상세',
+            '<div class="meta-line tabular-nums">' +
+              formatClock(rec.startTime) +
+              ' ~ ' +
+              formatClock(rec.endTime) +
+              ' · 전체 ' +
+              formatHumanDuration(rec.totalMs) +
+              '</div>' +
+              '<div class="meta-line tabular-nums">기준 각도 ' +
+              (rec.baselinePitch || 55) +
+              '° · 최대 기울기 편차 ' +
+              (rec.maxDeviation || 0) +
+              '°</div>' +
+              '<div style="padding-top:6px;">' +
+              rows +
+              '</div>',
+            '<button type="button" class="btn btn-sm btn-primary" id="modalOkBtn">확인</button>'
+          );
+          document.getElementById('modalOkBtn').addEventListener('click', closeModal);
+        }
+
+        function confirmDeleteSingleRecord(id) {
+          openModal(
+            '측정 기록 삭제',
+            '<p class="body-text">선택한 측정 기록을 삭제할까요? 삭제된 기록은 복구할 수 없습니다.</p>',
+            '<button type="button" class="btn btn-sm btn-secondary" id="modalCancelBtn">취소</button>' +
+              '<button type="button" class="btn btn-sm btn-danger" id="modalConfirmDelBtn">삭제하기</button>'
+          );
+          document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+          document.getElementById('modalConfirmDelBtn').addEventListener('click', function () {
+            records = records.filter(function (r) {
+              return r.id !== id;
+            });
+            saveRecords();
+            closeModal();
+            renderHistory();
+            renderHome();
+          });
+        }
+
+        function confirmDeleteAllRecords() {
+          if (records.length === 0) return;
+          openModal(
+            '전체 기록 삭제 확인',
+            '<p class="body-text">지금까지 저장된 모든 측정 기록(' +
+              records.length +
+              '건)을 완전히 삭제할까요? 이 작업은 되돌릴 수 없습니다.</p>',
+            '<button type="button" class="btn btn-sm btn-secondary" id="modalCancelBtn">취소</button>' +
+              '<button type="button" class="btn btn-sm btn-danger" id="modalConfirmAllBtn">모두 삭제</button>'
+          );
+          document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+          document.getElementById('modalConfirmAllBtn').addEventListener('click', function () {
+            records = [];
+            saveRecords();
+            closeModal();
+            renderHistory();
+            renderHome();
+            renderAnalytics();
+          });
+        }
+
+        /* =========================================================
+         * 10. RENDERING: SETTINGS VIEW & DIAGNOSTICS
+         * ========================================================= */
+        function renderSettings() {
+          document.getElementById('setDailyGoal').value = settings.dailyGoalMinutes;
+          document.getElementById('valDailyGoal').textContent = settings.dailyGoalMinutes + '분';
+
+          document.getElementById('setSafeMax').value = settings.safeMaxDeg;
+          document.getElementById('valSafeMax').textContent = '±' + settings.safeMaxDeg + '° 이하';
+
+          document.getElementById('setCautionMax').value = settings.cautionMaxDeg;
+          document.getElementById('valCautionMax').textContent = '±' + settings.cautionMaxDeg + '° 이하';
+
+          document.getElementById('setWarningMax').value = settings.warningMaxDeg;
+          document.getElementById('valWarningMax').textContent = '±' + settings.warningMaxDeg + '° 이하';
+
+          document.getElementById('setHysteresis').value = settings.hysteresisMs;
+          document.getElementById('valHysteresis').textContent = (settings.hysteresisMs / 1000).toFixed(2).replace(/\.00$/, '.0') + '초';
+
+          document.getElementById('setAlertSec').value = settings.alertHoldSec;
+          document.getElementById('valAlertSec').textContent = settings.alertHoldSec + '초';
+
+          document.getElementById('toggleVibration').setAttribute('aria-checked', String(Boolean(settings.vibrationEnabled)));
+
+          renderDiagnostics();
+        }
+
+        async function renderDiagnostics() {
+          const env = detectEnvironment();
+          const perm = await queryBrowserSensorPermissions();
+          const permLabelMap = {
+            granted: '허용됨',
+            prompt: '요청 대기 (측정 시 확인)',
+            denied: '차단됨 (브라우저 사이트 설정에서 허용 필요)',
+            unknown: env.needsIOSPermission ? 'iOS 시작 버튼으로 요청' : '브라우저 자동 처리'
+          };
+
+          const rows = [
+            {
+              label: 'HTTPS 보안 연결',
+              val: env.isLocalFile
+                ? '로컬 파일 (file:// — 모바일에서 센서 제한 가능)'
+                : env.isSecure
+                ? '지원됨 (정상)'
+                : '미지원 (HTTP에서는 센서 제한)'
+            },
+            { label: '가속도·자이로 API (DeviceMotion)', val: env.hasMotionAPI ? '브라우저 지원' : '미지원' },
+            { label: '표준 센서 API (Accelerometer/Gyro)', val: env.hasGenericSensors ? '브라우저 지원' : '미지원 (DeviceMotion 사용)' },
+            { label: '브라우저 동작 센서 권한', val: permLabelMap[perm.accel] || '확인 불가' },
+            {
+              label: '접속 환경',
+              val:
+                (env.isMobileUA ? '모바일 브라우저' : 'PC/데스크톱 브라우저') +
+                (env.isInAppBrowser ? ' · 인앱 브라우저' : '') +
+                (env.isIframe ? ' · 미리보기(iFrame)' : '')
+            }
+          ];
+
+          document.getElementById('diagGrid').innerHTML = rows
+            .map(function (row) {
+              return (
+                '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-hairline);font-size:0.875rem;">' +
+                '<span style="color:var(--text-muted);font-weight:600;">' +
+                escapeHtml(row.label) +
+                '</span>' +
+                '<span style="font-weight:700;text-align:right;">' +
+                escapeHtml(row.val) +
+                '</span>' +
+                '</div>'
+              );
+            })
+            .join('');
+        }
+
+        async function runSensorDiagnosticTest() {
+          const msgEl = document.getElementById('diagResultMsg');
+          msgEl.textContent = '센서 응답을 확인하는 중입니다...';
+
+          const env = detectEnvironment();
+          if (!env.isSecure && !env.isLocalFile) {
+            msgEl.textContent = 'HTTPS 환경이 아니므로 센서 테스트를 진행할 수 없습니다.';
+            return;
+          }
+
+          if (env.needsIOSPermission) {
+            try {
+              const permCalls = [];
+              if (env.hasMotionAPI && typeof window.DeviceMotionEvent.requestPermission === 'function') {
+                permCalls.push(window.DeviceMotionEvent.requestPermission());
+              }
+              if (env.hasOrientAPI && typeof window.DeviceOrientationEvent.requestPermission === 'function') {
+                permCalls.push(window.DeviceOrientationEvent.requestPermission());
+              }
+              if (permCalls.length > 0) {
+                const res = await Promise.all(permCalls);
+                if (res.some(function (r) { return r !== 'granted'; })) {
+                  msgEl.textContent = '권한이 거부되었습니다. Safari 설정에서 동작 및 방향 접근을 허용해 주세요.';
+                  return;
+                }
+              }
+            } catch (e) {
+              msgEl.textContent = '권한 요청 중 오류가 발생했습니다.';
+              return;
+            }
+          } else {
+            const perm = await queryBrowserSensorPermissions();
+            if (perm.accel === 'denied') {
+              msgEl.textContent = '브라우저 설정에서 동작 센서가 차단되어 있습니다. 주소창 왼쪽 아이콘 → 권한 → 동작 센서를 허용으로 바꿔 주세요.';
+              renderDiagnostics();
+              return;
+            }
+          }
+
+          let gotPacket = false;
+          let testAccel = null;
+
+          const onTestMotion = function (ev) {
+            if (ev.accelerationIncludingGravity && typeof ev.accelerationIncludingGravity.x === 'number') {
+              gotPacket = true;
+            }
+          };
+          const onTestOrient = function (ev) {
+            if (typeof ev.beta === 'number') gotPacket = true;
+          };
+
+          window.addEventListener('devicemotion', onTestMotion, false);
+          window.addEventListener('deviceorientation', onTestOrient, false);
+
+          if ('Accelerometer' in window) {
+            try {
+              testAccel = new window.Accelerometer({ frequency: 15 });
+              testAccel.addEventListener('reading', function () {
+                if (typeof testAccel.x === 'number') gotPacket = true;
+              });
+              testAccel.start();
+            } catch (e) {}
+          }
+
+          setTimeout(function () {
+            window.removeEventListener('devicemotion', onTestMotion, false);
+            window.removeEventListener('deviceorientation', onTestOrient, false);
+            if (testAccel) {
+              try { testAccel.stop(); } catch (e) {}
+            }
+            renderDiagnostics();
+            if (gotPacket) {
+              msgEl.textContent = '확인 완료: 실제 기기 센서 데이터가 정상적으로 수신되고 있습니다.';
+            } else {
+              msgEl.textContent =
+                '센서 신호가 수신되지 않았습니다. PC·미리보기 환경이거나 브라우저 설정에서 동작 센서가 차단된 상태일 수 있습니다.';
+            }
+          }, 1500);
+        }
+
+        /* =========================================================
+         * 11. MODAL & SECURITY HELPERS
+         * ========================================================= */
+        function openModal(title, bodyHtml, footerHtml) {
+          document.getElementById('modalTitle').textContent = title;
+          document.getElementById('modalBody').innerHTML = bodyHtml;
+          document.getElementById('modalFooter').innerHTML = footerHtml || '';
+          document.getElementById('modalBackdrop').classList.add('open');
+        }
+
+        function closeModal() {
+          document.getElementById('modalBackdrop').classList.remove('open');
+        }
+
+        function escapeHtml(str) {
+          return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        /* =========================================================
+         * 12. EVENT BINDINGS
+         * ========================================================= */
+        // Global delegated navigation
+        document.addEventListener('click', function (e) {
+          const navBtn = e.target.closest('[data-nav]');
+          if (navBtn) {
+            navigateTo(navBtn.getAttribute('data-nav'));
+            return;
+          }
+
+          const detailBtn = e.target.closest('[data-detail-id]');
+          if (detailBtn) {
+            openRecordDetailModal(detailBtn.getAttribute('data-detail-id'));
+            return;
+          }
+
+          const delBtn = e.target.closest('[data-delete-id]');
+          if (delBtn) {
+            confirmDeleteSingleRecord(delBtn.getAttribute('data-delete-id'));
+            return;
+          }
+        });
+
+        document.getElementById('headerStartBtn').addEventListener('click', function () {
+          navigateTo('measure');
+          if (session.status === 'idle') {
+            startMeasurement();
+          }
+        });
+
+        document.getElementById('homeStartBtn').addEventListener('click', function () {
+          navigateTo('measure');
+          if (session.status === 'idle') {
+            startMeasurement();
+          }
+        });
+
+        // Measure controls
+        document.getElementById('btnStartMeasure').addEventListener('click', function () {
+          startMeasurement(null);
+        });
+        document.getElementById('btnPauseMeasure').addEventListener('click', function () {
+          if (session.status === 'running') {
+            pauseMeasurement(false);
+          } else if (session.status === 'paused') {
+            resumeMeasurement();
+          }
+        });
+        document.getElementById('btnStopMeasure').addEventListener('click', stopAndSaveMeasurement);
+        document.getElementById('btnCalibrate').addEventListener('click', calibrateBaseline);
+        document.getElementById('btnTogglePip').addEventListener('click', togglePipOverlay);
+        document.getElementById('btnToggleMiniMode').addEventListener('click', function () {
+          toggleMiniMode();
+        });
+
+        // Analytics tabs
+        document.getElementById('tabWeekly').addEventListener('click', function () {
+          analyticsPeriod = 'weekly';
+          renderAnalytics();
+        });
+        document.getElementById('tabMonthly').addEventListener('click', function () {
+          analyticsPeriod = 'monthly';
+          renderAnalytics();
+        });
+
+        // History filters & delete all
+        document.getElementById('historyDateFilter').addEventListener('change', function (e) {
+          historyDateFilter = e.target.value;
+          renderHistory();
+        });
+        document.getElementById('historyClearFilterBtn').addEventListener('click', function () {
+          historyDateFilter = '';
+          renderHistory();
+        });
+        document.getElementById('historyDeleteAllBtn').addEventListener('click', confirmDeleteAllRecords);
+
+        // Settings controls
+        document.getElementById('setDailyGoal').addEventListener('input', function (e) {
+          settings.dailyGoalMinutes = Number(e.target.value);
+          saveSettings();
+          renderSettings();
+          renderHome();
+        });
+
+        document.getElementById('setSafeMax').addEventListener('input', function (e) {
+          const val = Number(e.target.value);
+          settings.safeMaxDeg = val;
+          if (settings.cautionMaxDeg <= val + 2) settings.cautionMaxDeg = val + 4;
+          if (settings.warningMaxDeg <= settings.cautionMaxDeg + 2) settings.warningMaxDeg = settings.cautionMaxDeg + 6;
+          saveSettings();
+          renderSettings();
+        });
+
+        document.getElementById('setCautionMax').addEventListener('input', function (e) {
+          const val = Math.max(settings.safeMaxDeg + 2, Number(e.target.value));
+          settings.cautionMaxDeg = val;
+          if (settings.warningMaxDeg <= val + 2) settings.warningMaxDeg = val + 6;
+          saveSettings();
+          renderSettings();
+        });
+
+        document.getElementById('setWarningMax').addEventListener('input', function (e) {
+          settings.warningMaxDeg = Math.max(settings.cautionMaxDeg + 2, Number(e.target.value));
+          saveSettings();
+          renderSettings();
+        });
+
+        document.getElementById('setHysteresis').addEventListener('input', function (e) {
+          settings.hysteresisMs = Number(e.target.value);
+          saveSettings();
+          renderSettings();
+        });
+
+        document.getElementById('setAlertSec').addEventListener('input', function (e) {
+          settings.alertHoldSec = Number(e.target.value);
+          saveSettings();
+          renderSettings();
+        });
+
+        document.getElementById('toggleVibration').addEventListener('click', function () {
+          settings.vibrationEnabled = !settings.vibrationEnabled;
+          saveSettings();
+          renderSettings();
+        });
+
+        document.getElementById('btnResetSettings').addEventListener('click', function () {
+          settings = Object.assign({}, DEFAULT_SETTINGS);
+          saveSettings();
+          renderSettings();
+          renderHome();
+        });
+
+        document.getElementById('btnTestSensorDiag').addEventListener('click', runSensorDiagnosticTest);
+        document.getElementById('btnSettingsDeleteAll').addEventListener('click', confirmDeleteAllRecords);
+
+        // Modal close bindings
+        document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+        document.getElementById('modalBackdrop').addEventListener('click', function (e) {
+          if (e.target === this) closeModal();
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') closeModal();
+        });
+
+        // Keep measuring continuously across repeated tab/app switches unless user explicitly paused or stopped
+        function handleBackgroundLeave() {
+          if (session.status !== 'running' && session.status !== 'paused') return;
+          // Only mark hidden when document is actually hidden (do not interrupt Split-Screen / Pop-up View on window blur)
+          if (document.hidden && session.status === 'running' && session.hiddenSinceWall === 0) {
+            session.hiddenSinceWall = Date.now();
+          }
+          saveActiveCheckpoint();
+        }
+
+        function handleForegroundReturn() {
+          if (session.status !== 'running') return;
+          const nowWall = Date.now();
+          if (nowWall - session.lastForegroundHandleAt < 350) return;
+          session.lastForegroundHandleAt = nowWall;
+
+          const nowPerf = performance.now();
+          const packetCountBeforeReturn = session.sensorCount;
+          session.hiddenSinceWall = 0;
+          session.lastTickWallAt = nowWall;
+          session.lastTickAt = nowPerf;
+          // Immediately catch up elapsed duration while tab was hidden/frozen so totalMs matches wall clock 1:1
+          if (session.hasMotionData || session.hasOrientData) {
+            accumulateRealSensorTime(nowWall, nowPerf);
+          }
+          acquireWakeLock();
+          ensureBackgroundKeepAlive();
+
+          // Restart Web Worker tick loop if browser froze or throttled it
+          if (!session.tickWorker && !session.tickTimer) {
+            startTickLoop();
+          }
+
+          // Multi-stage silent sensor revival if OS suspended Generic Sensor / devicemotion across repeated app switches
+          if (!session.needsIOSRegrant) {
+            if (session.reviveTimer) clearTimeout(session.reviveTimer);
+            if (session.reviveTimer2) clearTimeout(session.reviveTimer2);
+
+            session.reviveTimer = setTimeout(function () {
+              if (session.status === 'running' && !session.needsIOSRegrant && session.sensorCount === packetCountBeforeReturn) {
+                session.lastReviveAt = Date.now();
+                attachSensorListeners(true);
+              }
+            }, 500);
+
+            session.reviveTimer2 = setTimeout(function () {
+              if (session.status === 'running' && !session.needsIOSRegrant && session.sensorCount === packetCountBeforeReturn) {
+                session.lastReviveAt = Date.now();
+                attachSensorListeners(true);
+              }
+            }, 1800);
+          }
+
+          saveActiveCheckpoint();
+          updateMeasureUI();
+        }
+
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState === 'visible') {
+            if (session.status === 'running' && (!session.wakeLock || session.wakeLock.released)) {
+              acquireWakeLock();
+            }
+            handleForegroundReturn();
+          } else {
+            handleBackgroundLeave();
+          }
+        });
+
+        document.addEventListener('freeze', handleBackgroundLeave);
+        document.addEventListener('resume', handleForegroundReturn);
+        window.addEventListener('blur', handleBackgroundLeave);
+        window.addEventListener('focus', function () {
+          if (!document.hidden) handleForegroundReturn();
+        });
+        window.addEventListener('pagehide', handleBackgroundLeave);
+        window.addEventListener('pageshow', function () {
+          if (!document.hidden) handleForegroundReturn();
+        });
+
+        // Seamlessly restore running session if mobile OS discarded/reloaded the background tab after repeated app switches
+        function restoreIOSRunningSession(cp) {
+          const nowWall = Date.now();
+          const nowPerf = performance.now();
+          const reloadGap = Math.max(0, nowWall - (cp.savedAt || cp.startTime || nowWall));
+
+          session.status = 'running';
+          session.startTime = cp.startTime || nowWall;
+          session.manualPausedMs = cp.manualPausedMs || 0;
+          session.pausedStartedWallAt = 0;
+          session.lastTickAt = nowPerf;
+          session.lastTickWallAt = nowWall;
+          session.lastAccumWallAt = nowWall;
+          session.lastSensorAt = 0;
+          session.lastSensorWallAt = 0;
+          session.lastNativeMotionWallAt = 0;
+          session.lastGenericAccelWallAt = 0;
+          session.lastReviveAt = nowWall;
+          session.lastCheckpointAt = nowWall;
+          session.sensorCount = 0;
+          session.rateSampleCount = 0;
+          session.rateWindowStart = 0;
+          session.currentHz = 0;
+          session.hasMotionData = Boolean(cp.hasRealData || cp.totalMs > 0);
+          session.hasNativeMotion = false;
+          session.hasOrientData = false;
+          session.activeState = cp.activeState || 'safe';
+          session.candidateState = session.activeState;
+          session.candidateSince = nowWall;
+          session.badPostureSince = 0;
+          session.totalMs = cp.totalMs || 0;
+          session.durationsMs = Object.assign({ safe: 0, caution: 0, warning: 0, danger: 0 }, cp.durationsMs);
+          session.counts = Object.assign({ safe: 1, caution: 0, warning: 0, danger: 0 }, cp.counts);
+          session.maxDeviation = cp.maxDeviation || 0;
+          session.hiddenSinceWall = 0;
+          session.backgroundMeasuredMs = cp.backgroundMeasuredMs || 0;
+          session.osSuspendedMs = (cp.osSuspendedMs || 0) + (reloadGap >= 3000 ? reloadGap : 0);
+          session.pausedByBackground = false;
+          session.needsIOSRegrant = true;
+
+          startTickLoop();
+          saveActiveCheckpoint();
+          updateMeasureUI();
+          syncBackgroundTheme();
+
+          showMeasureBanner(
+            'info',
+            '측정 세션이 자동 유지되었습니다 (화면을 한 번 터치해 센서 재연결)',
+            '여러 앱을 오가는 동안 iOS 브라우저가 탭을 새로고침했지만 측정은 중단되지 않고 이어지고 있습니다. 화면 아무 곳이나 한 번 터치하면 모션 센서가 즉시 다시 연결됩니다.',
+            false
+          );
+
+          const onFirstTap = function (ev) {
+            if (!session.needsIOSRegrant || session.status !== 'running') {
+              clearIOSRegrantListener();
+              return;
+            }
+            const target = ev && ev.target;
+            if (target && target.closest && (target.closest('#btnPauseMeasure') || target.closest('#btnStopMeasure'))) {
+              return;
+            }
+            clearIOSRegrantListener();
+            requestSensorPermissions().then(function (ok) {
+              if (ok && session.status === 'running') {
+                attachSensorListeners(true);
+                acquireWakeLock();
+                startBackgroundKeepAlive();
+                hideMeasureBanner();
+                updateMeasureUI();
+                syncBackgroundTheme();
+              }
+            });
+          };
+          session.iosRegrantHandler = onFirstTap;
+          document.addEventListener('pointerdown', onFirstTap, true);
+          document.addEventListener('click', onFirstTap, true);
+        }
+
+        function checkInterruptedSession() {
+          const cp = loadActiveCheckpoint();
+          if (!cp) return;
+
+          // If user never pressed Pause or Stop, seamlessly keep measuring even if OS discarded & reloaded the tab
+          if (cp.wasRunning) {
+            const env = detectEnvironment();
+            const reloadGap = Math.max(0, Math.min(86400000, Date.now() - (cp.savedAt || cp.startTime || Date.now())));
+            if (reloadGap > 0 && (cp.hasRealData || cp.totalMs > 0)) {
+              const stKey = STATES[cp.activeState] ? cp.activeState : 'safe';
+              cp.totalMs = (cp.totalMs || 0) + reloadGap;
+              cp.durationsMs = Object.assign({ safe: 0, caution: 0, warning: 0, danger: 0 }, cp.durationsMs);
+              cp.durationsMs[stKey] = (cp.durationsMs[stKey] || 0) + reloadGap;
+            }
+            navigateTo('measure');
+            if (env.needsIOSPermission) {
+              restoreIOSRunningSession(cp);
+            } else {
+              startMeasurement(cp);
+            }
+            return;
+          }
+
+          // Paused session recovery banner
+          const el = document.getElementById('measureBanner');
+          el.className = 'notice-box info';
+          el.innerHTML =
+            '<div class="stack-sm" style="gap:6px;">' +
+            '<strong style="font-size:0.9375rem;">일시정지된 측정 기록이 남아 있습니다 (' +
+            escapeHtml(formatHumanDuration(cp.totalMs)) +
+            ')</strong>' +
+            '<p style="font-size:0.875rem;">이전에 일시정지해 둔 측정 세션이 자동 임시 저장되어 있습니다. 이어서 측정하거나 지금까지의 기록을 저장할 수 있습니다.</p>' +
+            '<div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px;">' +
+            '<button type="button" class="btn btn-sm btn-primary" id="btnResumeCheckpoint">이어서 측정</button>' +
+            '<button type="button" class="btn btn-sm btn-secondary" id="btnSaveCheckpoint">지금까지 저장</button>' +
+            '<button type="button" class="btn btn-sm btn-ghost-danger" id="btnDiscardCheckpoint">삭제</button>' +
+            '</div></div>';
+          el.style.display = 'flex';
+
+          document.getElementById('btnResumeCheckpoint').addEventListener('click', function () {
+            hideMeasureBanner();
+            startMeasurement(cp);
+          });
+          document.getElementById('btnSaveCheckpoint').addEventListener('click', function () {
+            const record = {
+              id: 'rec_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+              dateKey: toLocalDateKey(cp.startTime),
+              startTime: cp.startTime,
+              endTime: cp.savedAt || Date.now(),
+              totalMs: cp.totalMs,
+              durationsMs: cp.durationsMs,
+              counts: cp.counts || { safe: 1, caution: 0, warning: 0, danger: 0 },
+              baselinePitch: cp.baselinePitch || 55,
+              maxDeviation: cp.maxDeviation || 0
+            };
+            records.unshift(record);
+            saveRecords();
+            clearActiveCheckpoint();
+            hideMeasureBanner();
+            renderHome();
+            navigateTo('history');
+          });
+          document.getElementById('btnDiscardCheckpoint').addEventListener('click', function () {
+            clearActiveCheckpoint();
+            hideMeasureBanner();
+          });
+        }
+
+        // Initial Render
+        renderHome();
+        checkInterruptedSession();
+      })();
+    </script>
+  </body>
+</html>
